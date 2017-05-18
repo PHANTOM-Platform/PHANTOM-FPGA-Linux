@@ -1,0 +1,6 @@
+//arch = zynq; split = false; format = BIN
+the_ROM_image:
+{
+	[bootloader]/home/ian/phantom_linux/binarysources/fsbl.elf
+	/home/ian/phantom_linux/binarysources/u-boot.elf
+}
