@@ -1,3 +1,6 @@
 linux-xlnx/
 u-boot-xlnx/
 rootfs/rootfs/
+*.DS_Store
+*~
+
