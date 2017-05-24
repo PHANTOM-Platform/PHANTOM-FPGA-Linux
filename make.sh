@@ -2,6 +2,7 @@
 
 DEVICETREE=zynq-zc706.dts
 UBOOT_TARGET=zynq_zc706
+BOARD_PART=xilinx.com:zc706:part0:1.3
 
 if [ ! "$1" == "sources" ]; then
 	if [ ! -d "linux-xlnx" ]; then
@@ -55,8 +56,19 @@ case "$1" in
 		sudo ./zynq_setup.sh
 	;;
 
+	'hwproject' )
+		cd arch
+		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `pwd`/../ $BOARD_PART ${@:2}
+	;;
+
+	'implement' )
+		cd arch
+		vivado -mode batch -source implement_project.tcl -notrace
+		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
+	;;
+
 	'' )
-		echo "Usage: $0 [sources | kernel | uboot | rootfs ]"
+		echo "Usage: $0 [sources | kernel | uboot | rootfs | hwproject | implement]"
 	;;
 
 esac

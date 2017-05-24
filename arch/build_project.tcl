@@ -3,41 +3,38 @@
 #
 # This script constructs a Vivado project that implements a PHANTOM-compatible FPGA design.
 # Should be executed from the command line using Vivado in batch mode as follows:
-#    vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs proj ~ xc7z045ffg900-2 xilinx.com:zc706:part0:1.3 ip1 ip2 ip3
+#    vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs proj ~ xilinx.com:zc706:part0:1.3 ip1 ip2 ip3
 #
 #  argv[0] = project name
 #  argv[1] = path in which to create project
-#  argv[2] = FPGA part to target
-#  argv[3] = Board part to target
+#  argv[2] = Board part to target
 #  all subsequent arguments are the IP cores to add to the project.
 #
 # IP cores should be placed in the phantom_ip directory.
 # 
 
 # Read command line arguments
-if {[llength $argv] < 4} {
-	puts "Warning: Required arguments <project name> <project path> <part name> <board part> \[<ip core>\]"
+if {[llength $argv] < 3} {
+	puts "Warning: Required arguments <project name> <project path> <board part> \[<ip core>\]"
 	puts "Using default values."
 
 	set proj_name "testing"
 	set proj_path "~"
-	set part "xc7z045ffg900-2"
 	set brd_part "xilinx.com:zc706:part0:1.3"
 	set ips [list phantom_dummy_2 phantom_dummy_4]
 } else {
 	set proj_name [lindex $argv 0]
 	set proj_path [lindex $argv 1]
-	set part [lindex $argv 2]
-	set brd_part [lindex $argv 3]
+	set brd_part [lindex $argv 2]
 	
 	set ips ""
-	for { set i 4 } { $i < [llength $argv] } { incr i } {
+	for { set i 3 } { $i < [llength $argv] } { incr i } {
 		lappend ips [lindex $argv $i]
 	}
 }
 
 puts "Creating PHANTOM project $proj_path/$proj_name"
-puts "Target FPGA $part for board $brd_part"
+puts "Target board $brd_part"
 puts "IPs to include:"
 foreach ipname $ips {
 	puts "    $ipname"
@@ -50,7 +47,7 @@ set repo_path $script_path/phantom_ip
 
 #Create project
 puts "Creating project $proj_path/$proj_name"
-create_project -force $proj_name $proj_path/$proj_name -part $part
+create_project -force $proj_name $proj_path/$proj_name
 set_property board_part $brd_part [current_project]
 
 set_property ip_repo_paths "$repo_path" [current_project]

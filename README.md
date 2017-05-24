@@ -64,3 +64,20 @@ Select Create new BIF file, and set the output paths to where you want the image
 
 Then add `images/u-boot.elf`, `images/uImage`, and `images/devicetree.dtb` as a `datafile` partitions. Click create image.
 
+
+## Creating an FPGA hardware design
+
+The PHANTOM distribution also contains the scripts which create PHANTOM-compatible FPGA designs. A PHANTOM hardware design encapsulates a set of IP cores, makes them available to the software running in the Linux distribution, and includes the various security and monitoring requirements of the PHANTOM platform.
+
+To build a hardware project, first check ensure that the IP cores you are using are in the `arch/phantom_ip` directory. This directory already contains two dummy IP cores which can be used for testing. Ensure that the `BOARD_PART` option at the top of `make.sh` is set for your target board. `BOARD_PART` is the Xilinx part name for the development board being used. For the ZC706 this is `xilinx.com:zc706:part0:1.3`. You can list all of the boad parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
+
+Once set, execute the following:
+
+	./make.sh hwproject ipcore1 ipcore2
+
+where `ipcore1` and `ipcore2` are the PHANTOM IP cores to add to this project. This will create a Vivado project at `/hwproject` which you can build using Vivado as normal, or implement from the command line with:
+
+	./make.sh implement
+
+
+
