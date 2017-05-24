@@ -7,3 +7,6 @@ rootfs/rootfs/
 vivado.log
 vivado.jou
 
+*.backup.jou
+*.backup.log
+
