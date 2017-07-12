@@ -58,7 +58,8 @@ case "$1" in
 
 		cd phantom_api
 		make
-		cp phantom_api.so ../rootfs/rootfs/usr/lib
+		cp phantom_api.so ../rootfs/rootfs/usr/lib/
+		cp *.h ../rootfs/rootfs/usr/include/
 		cd ..
 	;;
 
