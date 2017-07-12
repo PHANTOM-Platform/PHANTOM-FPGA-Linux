@@ -54,6 +54,12 @@ case "$1" in
 		cd rootfs
 		multistrap -f multistrap.conf
 		sudo ./zynq_setup.sh
+		cd ..
+
+		cd phantom_api
+		make
+		cp phantom_api.so ../rootfs/rootfs/usr/lib
+		cd ..
 	;;
 
 	'hwproject' )
