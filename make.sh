@@ -81,6 +81,7 @@ case "$1" in
 			rf -rf linux-xlnx u-boot-xlnx
 			rf -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf
 			rf -rf rootfs/rootfs
+			rf -rf hwproj
 		fi
 	;;
 

@@ -1,6 +1,7 @@
 linux-xlnx/
 u-boot-xlnx/
 rootfs/rootfs/
+hwproj
 *.DS_Store
 *~
 
@@ -9,4 +10,3 @@ vivado.jou
 
 *.backup.jou
 *.backup.log
-
