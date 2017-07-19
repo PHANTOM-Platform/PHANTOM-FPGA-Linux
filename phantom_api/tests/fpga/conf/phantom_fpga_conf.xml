@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?phantom conf file version="0.1"?>
+<!--
+Filename: phanton_fpga_conf.xml
+Created: June 2017
+Project: PHANTOM
+-->
+<phantom_fpga>
+  <fpga_type>zynq_apsoc</fpga_type>
+  <target_device>xc7z010clg400</target_device>
+  <target_board>debug</target_board>
+  <design_name>phantom_colmatrix</design_name>>
+  <design_bitfile>phantom_colmatrix.bit</design_bitfile>
+  <component_inst>
+    <name>ph_ip_axi_mac32_0</name>
+    <id>5001</id>
+    <ipname>ph_ip_axi_mac32</ipname>
+    <num_masters>4</num_masters>
+    <slave_addr_base_0>0x40000000</slave_addr_base_0>
+    <slave_addr_range_0>0x1000</slave_addr_range_0>
+  </component_inst>
+  <component_inst>
+    <name>ph_ip_axi_comparitor32_0</name>
+     <id>6402</id>
+     <ipname>ph_ip_axi_comparitor32</ipname>
+    <num_masters>6</num_masters>
+    <slave_addr_base_0>0x41000000</slave_addr_base_0>
+    <slave_addr_range_0>0x1000</slave_addr_range_0>
+  </component_inst>
+  <component_inst>
+    <name>ph_ip_axi_colfilter_0</name>
+    <id>3808</id>
+    <ipname>axi_multiplier</ipname>
+    <num_masters>7</num_masters>
+    <slave_addr_base_0>0x42000000</slave_addr_base_0>
+    <slave_addr_range_0>0x10000</slave_addr_range_0>
+    <slave_addr_base_1>0x80000000</slave_addr_base_1>
+    <slave_addr_range_1>0x1000</slave_addr_range_1>
+  </component_inst>
+  <interrupt_ctrl_inst>
+    <name>axi_intc_0</name>
+    <ipname>intc</ipname>
+    <id>0</id>
+    <irq_port>0</irq_port>
+    <reg_addr>0x4f000000</reg_addr>
+  </interrupt_ctrl_inst>
+  <interrupt_ctrl_inst>
+    <name>axi_intc_1</name>
+    <ipname>intc</ipname>
+    <id>0</id>
+    <irq_port>1</irq_port>
+    <reg_addr>0x8f000000</reg_addr>
+  </interrupt_ctrl_inst>
+</phantom_fpga>
