@@ -5,8 +5,12 @@ hwproj
 *.DS_Store
 *~
 
+# Vivado outputs a large amount of files to the current directory we need to ignore
 vivado.log
 vivado.jou
-
+webtalk.log
+webtalk.jou
+vivado_pid*.str
 *.backup.jou
 *.backup.log
+.Xil/
