@@ -11,6 +11,7 @@ vivado.jou
 webtalk.log
 webtalk.jou
 vivado_pid*.str
+vivado_pid*.debug
 *.backup.jou
 *.backup.log
 .Xil/
