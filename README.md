@@ -2,32 +2,34 @@
 
 The PHANTOM Linux software distribution contains prebuilt binaries for the ZC706 board, but also full instructions to create images for other Xilinx-supported boards.
 
-If you are using the ZC706, you only need set up an SD card, copy over the images, and build a root file system. 
+If you are using the ZC706, you only need set up an SD card, copy over the images, and build a root file system.
 
 
-### Building the Root Filesystem
+### Quick Start
 
-The Linux rootfs is built using [multistrap](https://wiki.debian.org/Multistrap) and QEMU which you should install first.
+If you are using the ZC706 and so are happy to use the prebuilt kernel, you can simply do the following:
 
 	sudo apt-get install multistrap dpkg-dev qemu-user-static
-
-Run multistrap, and then execute the PHANTOM setup script as follows:
-
 	./make.sh rootfs
 
 The script will ask for root permissions after downloading the packages to allow it to chroot into the new filesystem. It will also ask you to change the root password of the new root filesystem.
 
+Now ensure your PHANTOM-compatible IP cores are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
+
+	./make hwproject ipcore1 ipcore2
+	./make implement
+
 
 ### Set up an SD card
 
-Now we can create an SD card to contain the compiled boot image and root filesystem. Format an SD card with two partitions. 
+Now we can create an SD card to contain the compiled boot image and root filesystem. Format an SD card with two partitions.
 
  * The first, a small FAT32 partition. This is just to hold the boot image so around 10MB is plenty of space.
  * The rest of the card as a Linux filesystem, ext4 is a good choice.
 
 Ensure that the target board is set to boot from the SD card. This usually involves setting jumpers to select the boot target. Consult the manual for your board.
 
-Copy `images/BOOT.bin` to the small FAT32 partition. 
+Copy `images/BOOT.bin` and `images/bitstream.bit` to the small FAT32 partition.
 
 Copy the entire contents of the `rootfs/rootfs` folder to the ext4 partition of the SD card. For example, if it is mounted at `/media/youruser/rootfs`:
 
@@ -36,7 +38,7 @@ Copy the entire contents of the `rootfs/rootfs` folder to the ext4 partition of 
 
 ## Building for other boards
 
-To rebuild the images, the first task is to edit options at the top of `make.sh` to ensure that everything is ready for your target board. The `DEVICETREE` and `UBOOT_TARGET` variables are currently set for the ZC706 board. 
+To rebuild the images, the first task is to edit options at the top of `make.sh` to ensure that everything is ready for your target board. The `DEVICETREE` and `UBOOT_TARGET` variables are currently set for the ZC706 board.
 
 `DEVICETREE` should be the name of the device tree in the Linux kernel tree to use. Xilinx provides these for all of its boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders.
 
@@ -56,7 +58,7 @@ An FSBL (first stage bootloader) is required to start the boot process. The `ima
 
 ### Create a boot image
 
-We now need to combine the FSBL, u-boot, and the kernel, all into a single image. Again this is done using Xilinx SDK. 
+We now need to combine the FSBL, u-boot, and the kernel, all into a single image. Again this is done using Xilinx SDK.
 
 In the SDK menus, select Xilinx Tools -> Create Boot Image.
 
@@ -78,6 +80,3 @@ Once set, execute the following:
 where `ipcore1` and `ipcore2` are the PHANTOM IP cores to add to this project. This will create a Vivado project at `/hwproject` which you can build using Vivado as normal, or implement from the command line with:
 
 	./make.sh implement
-
-
-

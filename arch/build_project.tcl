@@ -156,7 +156,10 @@ foreach ipname $ips {
 }
 
 # Add the HDL wrapper
-make_wrapper -files [get_files /home/ian/proj/proj.srcs/sources_1/bd/design_1/design_1.bd] -top
+make_wrapper -files [get_files $proj_path/$proj_name/$proj_name.srcs/sources_1/bd/design_1/design_1.bd] -top
+add_files -norecurse $proj_path/$proj_name/$proj_name.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v
+update_compile_order -fileset sources_1
+update_compile_order -fileset sim_1
 
 # Regenerate the diagram and save up
 regenerate_bd_layout

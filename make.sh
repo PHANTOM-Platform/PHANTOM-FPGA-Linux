@@ -72,6 +72,7 @@ case "$1" in
 		cd arch
 		vivado -mode batch -source implement_project.tcl -notrace
 		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
+		cp ../hwproj/phantom_fpga_conf.xml ../images/phantom_fpga_conf.xml
 	;;
 
 	'clean' )
