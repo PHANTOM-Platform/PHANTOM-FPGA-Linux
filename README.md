@@ -4,6 +4,8 @@ The PHANTOM Linux software distribution contains prebuilt binaries for the ZC706
 
 If you are using the ZC706, you only need set up an SD card, copy over the images, and build a root file system.
 
+Note that many of these commands require that the Xilinx tools are in your `$PATH` so ensure that they are correctly installed.
+
 
 ### Quick Start
 
@@ -12,28 +14,27 @@ If you are using the ZC706 and so are happy to use the prebuilt kernel, you can 
 	sudo apt-get install multistrap dpkg-dev qemu-user-static
 	./make.sh rootfs
 
-The script will ask for root permissions after downloading the packages to allow it to chroot into the new filesystem. It will also ask you to change the root password of the new root filesystem.
+The script will ask for root permissions after downloading the packages to allow it to chroot into the new filesystem in order to change the root password.
 
 Now ensure your PHANTOM-compatible IP cores are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
 
 	./make hwproject ipcore1 ipcore2
 	./make implement
 
+Now create an SD card for the board.
 
 ### Set up an SD card
 
 Now we can create an SD card to contain the compiled boot image and root filesystem. Format an SD card with two partitions.
 
- * The first, a small FAT32 partition. This is just to hold the boot image so around 10MB is plenty of space.
+ * The first, a small FAT32 partition. This is just to hold the bootloader, kernel, and a bitstream, so around 30MB is plenty of space.
  * The rest of the card as a Linux filesystem, ext4 is a good choice.
 
-Ensure that the target board is set to boot from the SD card. This usually involves setting jumpers to select the boot target. Consult the manual for your board.
+Ensure that the SD card paritions are mounted and that the `SDCARD_BOOT` and `SDCARD_ROOTFS` variables at the top of `make.sh` are correctly set. Now copy all the files to the SD card:
 
-Copy `images/BOOT.bin` and `images/bitstream.bit` to the small FAT32 partition.
+	./make sdcard
 
-Copy the entire contents of the `rootfs/rootfs` folder to the ext4 partition of the SD card. For example, if it is mounted at `/media/youruser/rootfs`:
-
-	cp -r rootfs/rootfs/* /media/youruser/rootfs
+You are now ready to go!
 
 
 ## Building for other boards
@@ -53,9 +54,9 @@ Grab the sources and build them with the following:
 
 ### Get an FSBL
 
-An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706. For other boards you should use Xilinx SDK to create and compile an FSBL. Consult the Xilinx documentation for this.
+An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706. For other boards you should use Xilinx SDK to create and compile an FSBL. Using SDK, create a New Application Project using the 'Zynq FSBL' template. [Consult the Xilinx documentation](http://www.wiki.xilinx.com/Build+FSBL) for how to do this. Use SDK to compile the FSBL project to an ELF file.
 
-
+vivado -mode
 ### Create a boot image
 
 We now need to combine the FSBL, u-boot, and the kernel, all into a single image. Again this is done using Xilinx SDK.
@@ -64,14 +65,14 @@ In the SDK menus, select Xilinx Tools -> Create Boot Image.
 
 Select Create new BIF file, and set the output paths to where you want the image to be built. Now in the boot image partitions click add, select `images/fsbl.elf` and ensure Partition type is set to `bootloader`. Click OK.
 
-Then add `images/u-boot.elf`, `images/uImage`, and `images/devicetree.dtb` as a `datafile` partitions. Click create image.
+Then add `images/u-boot.elf`, `images/uImage`, and `images/devicetree.dtb` as a `datafile` partitions. Click create image. This will create `BOOT.bin` which you should place in the `images` directory.
 
 
 ## Creating an FPGA hardware design
 
 The PHANTOM distribution also contains the scripts which create PHANTOM-compatible FPGA designs. A PHANTOM hardware design encapsulates a set of IP cores, makes them available to the software running in the Linux distribution, and includes the various security and monitoring requirements of the PHANTOM platform.
 
-To build a hardware project, first check ensure that the IP cores you are using are in the `arch/phantom_ip` directory. This directory already contains two dummy IP cores which can be used for testing. Ensure that the `BOARD_PART` option at the top of `make.sh` is set for your target board. `BOARD_PART` is the Xilinx part name for the development board being used. For the ZC706 this is `xilinx.com:zc706:part0:1.3`. You can list all of the boad parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
+To build a hardware project, first check ensure that the IP cores you are using are in the `arch/phantom_ip` directory. This directory already contains two dummy IP cores which can be used for testing. Ensure that the `BOARD_PART` option at the top of `make.sh` is set for your target board. `BOARD_PART` is the Xilinx part name for the development board being used. For the ZC706 this is `xilinx.com:zc706:part0:1.3`. You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
 
 Once set, execute the following:
 
