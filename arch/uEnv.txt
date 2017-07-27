@@ -1,3 +1,4 @@
-fpgaload=load mmc 0 0x1000000 bitstream.bit; fpga loadb 0 0x1000000 ${filesize}
-bootargs="console=ttyPS0,115200 root=/dev/mmcblk0p2 rw rootwait devtmpfs.mount=0"
+bitfileexists=test -e mmc 0 /bitstream.bit
+fpgaload=if run bitfileexists; then load mmc 0 0x1000000 bitstream.bit; fpga loadb 0 0x1000000 ${filesize}; fi
+bootargs=console=ttyPS0,115200 root=/dev/mmcblk0p2 rw rootwait devtmpfs.mount=0
 uenvcmd=run fpgaload; load mmc 0 ${kernel_load_address} ${kernel_image} && load mmc 0 ${devicetree_load_address} ${devicetree_image} && bootm ${kernel_load_address} - ${devicetree_load_address}
