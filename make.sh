@@ -4,6 +4,10 @@ DEVICETREE=zynq-zc706.dts
 UBOOT_TARGET=zynq_zc706
 BOARD_PART=xilinx.com:zc706:part0:1.3
 
+SDCARD_BOOT=/media/$USER/BOOT/
+SDCARD_ROOTFS=/media/$USER/Linux/
+
+
 if [ ! "$1" == "sources" ]; then
 	if [ ! -d "linux-xlnx" ]; then
 		echo "Run ./make.sh sources first to grab the kernel and uboot sources."
@@ -66,6 +70,20 @@ case "$1" in
 	'hwproject' )
 		cd arch
 		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `pwd`/../ $BOARD_PART ${@:2}
+	;;
+
+	'sdcard' )
+		echo "Setting up boot partition..."
+		cp images/BOOT.bin $SDCARD_BOOT
+		cp images/devicetree.dtb $SDCARD_BOOT
+		cp images/uImage $SDCARD_BOOT
+		cp arch/uEnv.txt $SDCARD_BOOT
+		cp images/bitstream.bit $SDCARD_BOOT
+
+		echo "Copying root filesystem..."
+		cp -r rootfs/rootfs/* $SDCARD_ROOTFS
+
+		echo "Done."
 	;;
 
 	'implement' )
