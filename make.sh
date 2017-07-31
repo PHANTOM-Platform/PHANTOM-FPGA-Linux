@@ -79,6 +79,7 @@ case "$1" in
 		cp images/uImage $SDCARD_BOOT
 		cp arch/uEnv.txt $SDCARD_BOOT
 		cp images/bitstream.bit $SDCARD_BOOT
+		cp hwproj/phantom_fpga_conf.xml $SDCARD_BOOT
 
 		echo "Copying root filesystem..."
 		cp -r rootfs/rootfs/* $SDCARD_ROOTFS
