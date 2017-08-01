@@ -56,7 +56,6 @@ Grab the sources and build them with the following:
 
 An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706. For other boards you should use Xilinx SDK to create and compile an FSBL. Using SDK, create a New Application Project using the 'Zynq FSBL' template. [Consult the Xilinx documentation](http://www.wiki.xilinx.com/Build+FSBL) for how to do this. Use SDK to compile the FSBL project to an ELF file.
 
-vivado -mode
 ### Create a boot image
 
 We now need to combine the FSBL, u-boot, and the kernel, all into a single image. Again this is done using Xilinx SDK.
