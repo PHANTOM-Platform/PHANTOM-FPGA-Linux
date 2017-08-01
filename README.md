@@ -45,6 +45,8 @@ To rebuild the images, the first task is to edit options at the top of `make.sh`
 
 `UBOOT_TARGET` should be the target board to build u-boot for. The available configurations are in the `u-boot-xlnx/configs` directory.
 
+`BOARD_PART` should be the Xilinx name for the target board. You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
+
 Grab the sources and build them with the following:
 
 	./make.sh sources

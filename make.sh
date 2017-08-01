@@ -1,11 +1,29 @@
 #!/bin/bash
 
+# These variables must be set correctly for your target board
+
+# This is the devicetree file to use from the Linux kernel source tree.
+# Xilinx provides these for all of its boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders.
+# Common examples are: zynq-zc706.dts zynq-zed.dts zynq-zybo.dts
 DEVICETREE=zynq-zc706.dts
+
+# The target to use for uBoot, these are in the `u-boot-xlnx/configs` directory.
+# Common examples are: zynq_zc706 zynq_zed zynq_zybo
 UBOOT_TARGET=zynq_zc706
+
+# The Xilinx name for the target board.
+# You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
+# Common examples are: xilinx.com:zc706:part0:1.3 digilentinc.com:zedboard:part0:1.0 digilentinc.com:zybo:part0:1.0
 BOARD_PART=xilinx.com:zc706:part0:1.3
 
+# These are the boot and rootfs partitions of your target SD card
+# Set up the SD card with two partitions:
+#   The first, called BOOT, a small FAT32 partition of 30MB
+#   The rest, called Linux, as ext4
+# An Ubuntu-based system will automount such a card at the following locations
 SDCARD_BOOT=/media/$USER/BOOT/
 SDCARD_ROOTFS=/media/$USER/Linux/
+
 
 
 if [ ! "$1" == "sources" ]; then
