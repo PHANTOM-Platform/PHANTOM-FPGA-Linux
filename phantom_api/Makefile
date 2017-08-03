@@ -1,13 +1,6 @@
 SHELL     = /bin/sh
 CC        = arm-linux-gnueabihf-gcc
-CFLAGS    = -std=gnu99 -fPIC -O2 -DDEBUG
-
-#If DEBUG is set to a path, the FPGA configuration will be loaded from there instead
-#This is passed into the code using the macro SD_CARD_OVERRIDE
-ifdef DEBUG
-	CC = gcc
-	CFLAGS += -DSD_CARD_OVERRIDE=\"$(DEBUG)/\"
-endif
+CFLAGS    = -std=gnu99 -fPIC -O2 $(DEFINES)
 
 TARGET    = libphantom.so
 SOURCES   = $(shell echo *.c)
