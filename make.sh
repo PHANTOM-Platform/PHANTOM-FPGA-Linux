@@ -26,6 +26,23 @@ SDCARD_ROOTFS=/media/$USER/Linux/
 
 
 
+
+function build_api {
+	cd phantom_api
+	make DEFINES="-DSD_CARD_PHANTOM_LOC=\\\"/boot/\\\" -DTARGET_BOARD=\\\"$BOARD_PART\\\" -DTARGET_FPGA=0"
+	cp libphantom.so ../rootfs/rootfs/usr/lib/
+	cp *.h ../rootfs/rootfs/usr/include/
+	cd ..
+}
+
+function build_multistrap {
+	cd rootfs
+	multistrap -f multistrap.conf
+	sudo ./zynq_setup.sh
+	cd ..
+}
+
+
 if [ ! "$1" == "sources" ]; then
 	if [ ! -d "linux-xlnx" ]; then
 		echo "Run ./make.sh sources first to grab the kernel and uboot sources."
@@ -73,16 +90,12 @@ case "$1" in
 	;;
 
 	'rootfs' )
-		cd rootfs
-		multistrap -f multistrap.conf
-		sudo ./zynq_setup.sh
-		cd ..
+		build_multistrap
+		build_api
+	;;
 
-		cd phantom_api
-		make
-		cp libphantom.so ../rootfs/rootfs/usr/lib/
-		cp *.h ../rootfs/rootfs/usr/include/
-		cd ..
+	'api' )
+		build_api
 	;;
 
 	'hwproject' )
@@ -103,8 +116,9 @@ case "$1" in
 		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
 		cp hwproj/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
 
-		echo "Copying root filesystem..."
-		cp -r rootfs/rootfs/* $SDCARD_ROOTFS
+		echo "Copying root filesystem (will ask for root)..."
+		TARGETDIR=$SDCARD_ROOTFS
+		sudo cp -r rootfs/rootfs/* $TARGETDIR
 
 		echo "Done."
 	;;
