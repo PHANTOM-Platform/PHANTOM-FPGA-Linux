@@ -9,7 +9,7 @@ fi
 TARGET_ROOTFS_DIR="rootfs"
 
 #Copy a QEMU ARM binary for us to use in the environment
-cp /usr/bin/qemu-arm-static $TARGET_ROOTFS_DIR/usr/bin 
+cp /usr/bin/qemu-arm-static $TARGET_ROOTFS_DIR/usr/bin
 
 #Mount dev in the chroot
 mount -o bind /dev/ $TARGET_ROOTFS_DIR/dev/
@@ -36,7 +36,10 @@ touch $TARGET_ROOTFS_DIR/etc/fstab
 touch $TARGET_ROOTFS_DIR/etc/rc.conf
 
 # Configure the installed packages
-LC_ALL=C LANGUAGE=C LANG=C chroot $TARGET_ROOTFS_DIR dpkg --configure -a
+export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+export LC_ALL=C LANGUAGE=C LANG=C
+chroot $TARGET_ROOTFS_DIR /var/lib/dpkg/info/dash.preinst install
+chroot $TARGET_ROOTFS_DIR dpkg --configure -a
 
 # Fix some ownership issues
 chroot $TARGET_ROOTFS_DIR chown root:root -R /bin /usr/bin /sbin /usr/sbin
@@ -46,4 +49,3 @@ echo "Changing password for the rootfs root user:"
 chroot $TARGET_ROOTFS_DIR passwd root
 
 umount $TARGET_ROOTFS_DIR/dev/
-
