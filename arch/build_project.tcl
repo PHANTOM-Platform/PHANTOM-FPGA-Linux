@@ -69,7 +69,7 @@ puts $fp "<fpga_type>zynq_apsoc</fpga_type>"
 puts $fp "<target_device>fpgapart</target_device>"
 puts $fp "<target_board>$brd_part</target_board>"
 puts $fp "<design_name>$proj_name</design_name>"
-puts $fp "<design_bitfile>$proj_name.bit</design_bitfile>"
+puts $fp "<design_bitfile>bitfile.bit</design_bitfile>"
 
 # Add the Zynq IP
 puts "Adding fixed IP cores"
