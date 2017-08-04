@@ -25,6 +25,13 @@ SDCARD_BOOT=/media/$USER/BOOT/
 SDCARD_ROOTFS=/media/$USER/Linux/
 
 
+function compile_environment {
+	export ARCH=arm
+	export UIMAGE_LOADADDR=0x2080000
+	export LOADADDR=0x2080000
+	export CROSS_COMPILE="arm-linux-gnueabihf-"
+	export LD_LIBRARY_PATH=
+}
 
 
 function build_api {
@@ -65,11 +72,7 @@ case "$1" in
 
 	'kernel' )
 		cd linux-xlnx
-		export ARCH=arm
-		export UIMAGE_LOADADDR=0x2080000
-		export LOADADDR=0x2080000
-		export CROSS_COMPILE="arm-linux-gnueabihf-"
-		export LD_LIBRARY_PATH=
+		compile_environment
 		make xilinx_zynq_defconfig
 		make uImage
 		cp arch/arm/boot/uImage ../images/
@@ -79,11 +82,7 @@ case "$1" in
 
 	'uboot' )
 		cd u-boot-xlnx
-		export ARCH=arm
-		export UIMAGE_LOADADDR=0x2080000
-		export LOADADDR=0x2080000
-		export CROSS_COMPILE="arm-linux-gnueabihf-"
-		export LD_LIBRARY_PATH=
+		compile_environment
 		make $UBOOT_TARGET_defconfig
 		make
  		cp u-boot ../images/u-boot.elf
@@ -104,6 +103,13 @@ case "$1" in
 	;;
 
 	'sdcard' )
+		echo "Building and installing kernel modules..."
+		cd linux-xlnx
+		compile_environment
+		make modules
+		make modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
+		cd ..
+	
 		echo "Setting up boot partition..."
 		cp images/BOOT.bin $SDCARD_BOOT
 		cp images/devicetree.dtb $SDCARD_BOOT
