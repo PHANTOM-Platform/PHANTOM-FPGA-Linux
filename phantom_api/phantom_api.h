@@ -30,15 +30,25 @@
 
 #include <stdint.h>
 
-/* Target Platform definition */
-#define PHANTOM_HW_PLATFORM MICROZED
-//#define PHANTOM_HW_PLATFORM ZC706
-//#define PHANTOM_HW_PLATFORM ZYBO
+/* Target Platform definition
+   The config xml must match this value */
+#ifndef TARGET_BOARD
+    #define TARGET_BOARD "microzed"
+#endif
 
+/* Where is the bitfile and config file mounted once the kernel is booted */
+#ifndef SD_CARD_PHANTOM_LOC
+    #define SD_CARD_PHANTOM_LOC "/run/media/mmcblk0p1/phantom/"
+#endif
 
-/* Target SoC FPGA Device definition */
-#define FPGA ZYNQ_APSOC
-//#define FPGA ZYNQ_MPSOC
+/* Target SoC FPGA Device definition
+   0 for APSOC (32 bit)  "zynq_apsoc"
+   1 for MPSOC (64 bit)  "zynq_mpsoc"
+   The config xml target must match this value */
+#ifndef TARGET_FPGA
+    #define TARGET_FPGA 0
+    #define TARGET_FPGA_XML "zynq_apsoc"
+#endif
 
 
 /* API Status flags */
@@ -54,12 +64,14 @@
 
 
 /* register address and data sizes def. */
-#if FPGA == ZYNQ_APSOC
+#if TARGET_FPGA == 0
    typedef uint32_t phantom_data_t;
    typedef uint32_t phantom_address_t;
-#elif FPGA == ZYNQ_MPSOC
+   #define TARGET_FPGA_XML "zynq_apsoc"
+#else
    typedef uint64_t phantom_data_t;
    typedef uint64_t  phantom_address_t;
+   #define TARGET_FPGA_XML "zynq_mpsoc"
 #endif
 
 

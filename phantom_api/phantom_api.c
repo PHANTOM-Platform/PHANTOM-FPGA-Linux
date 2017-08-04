@@ -194,7 +194,7 @@ int phantom_initialise()
 	}
 
     /* Ensure the target fpga type required by the design matches the running platform's fpga */
-	if(strcmp(ph_platform->fpga_type, TARGET_FPGA))
+	if(strcmp(ph_platform->fpga_type, TARGET_FPGA_XML))
 	{
 		#ifdef DEBUG
 			printf("error: mismatch in target fpga type. Requesting %s.\n", ph_platform->fpga_type);
@@ -683,7 +683,3 @@ void phantom_terminate(void)
 	unmap_devs();
 	close_devs();
 }
-
-
-
-

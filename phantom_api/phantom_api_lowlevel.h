@@ -34,33 +34,6 @@
 
 
 /*
- * Board Specifics Defs.
- */
-
-#ifndef SD_CARD_OVERRIDE
-	#if PHANTOM_HW_PLATFORM == MICROZED // defined in phantom_api.h
-		#define TARGET_BOARD "microzed"
-	    #define SD_CARD_PHANTOM_LOC "/run/media/mmcblk0p1/phantom/"
-	#elif PHANTOM_HW_PLATFORM == ZC706
-		#define TARGET_BOARD "zc706"
-	    #define SD_CARD_PHANTOM_LOC "/run/media/mmcblk0p1/phantom/" // NOT KNOWN. TBD
-	#elif PHANTOM_HW_PLATFORM == ZEBO
-		#define TARGET_BOARD "zebo"
-	    #define SD_CARD_PHANTOM_LOC "/run/media/mmcblk0p1/phantom/" // NOT KNOWN. TBD
-	#endif
-#else
-	#define SD_CARD_PHANTOM_LOC SD_CARD_OVERRIDE
-	#define TARGET_BOARD "debug"
-#endif
-
-#if FPGA == ZYNQ_APSOC
-	#define TARGET_FPGA "zynq_apsoc"
-#elif FPGA == ZYNQ_MPSOC
-	#define TARGET_FPGA "zynq_mpsoc"
-#endif
-
-
-/*
  * Defines
  */
 
