@@ -26,6 +26,9 @@ echo ttyPS0 >> $filename
 filename=$TARGET_ROOTFS_DIR/etc/network/interfaces
 echo auto eth0 >> $filename
 
+# Mount the boot partition
+echo "/dev/mmcblk0p1 /boot vfat defaults 0 0" >> $TARGET_ROOTFS_DIR/etc/fstab
+
 # dhcp
 echo allow-hotplug eth0 >> $filename
 echo iface eth0 inet dhcp >> $filename
