@@ -4,8 +4,8 @@
 
 # This is the devicetree file to use from the Linux kernel source tree.
 # Xilinx provides these for all of its boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders.
-# Common examples are: zynq-zc706.dts zynq-zed.dts zynq-zybo.dts
-DEVICETREE=zynq-zc706.dts
+# Common examples are: zynq-zc706.dtb zynq-zed.dtb zynq-zybo.dtb
+DEVICETREE=zynq-zc706.dtb
 
 # The target to use for uBoot, these are in the `u-boot-xlnx/configs` directory.
 # Common examples are: zynq_zc706 zynq_zed zynq_zybo
@@ -76,8 +76,8 @@ case "$1" in
 		make xilinx_zynq_defconfig
 		make uImage
 		cp arch/arm/boot/uImage ../images/
-		make ARCH=arm zynq-zc706.dtb
-		cp arch/arm/boot/dts/zynq-zc706.dtb ../images/devicetree.dtb
+		make ARCH=arm $DEVICETREE
+		cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
 	;;
 
 	'uboot' )
@@ -109,7 +109,7 @@ case "$1" in
 		make modules
 		make modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
 		cd ..
-	
+
 		echo "Setting up boot partition..."
 		cp images/BOOT.bin $SDCARD_BOOT
 		cp images/devicetree.dtb $SDCARD_BOOT
