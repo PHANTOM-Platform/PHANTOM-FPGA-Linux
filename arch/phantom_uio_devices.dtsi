@@ -1,0 +1,233 @@
+/*
+ * This device tree describes the PHANTOM UIO devices that are part of the
+ * reconfigurable logic.
+ */
+
+
+/ {
+
+   phantom_axi@40000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x40000000 0x1000000>;
+   };
+
+   phantom_axi@41000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x41000000 0x1000000>;
+   };
+
+   phantom_axi@42000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x42000000 0x1000000>;
+   };
+
+   phantom_axi@43000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x43000000 0x1000000>;
+   };
+
+   phantom_axi@44000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x44000000 0x1000000>;
+   };
+
+   phantom_axi@45000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x45000000 0x1000000>;
+   };
+
+   phantom_axi@46000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x46000000 0x1000000>;
+   };
+
+   phantom_axi@47000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x47000000 0x1000000>;
+   };
+
+   phantom_axi@48000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x48000000 0x1000000>;
+   };
+
+   phantom_axi@49000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x49000000 0x1000000>;
+   };
+
+   phantom_axi@4a000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x4a000000 0x1000000>;
+   };
+
+   phantom_axi@4b000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x4b000000 0x1000000>;
+   };
+
+   phantom_axi@4c000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x4c000000 0x1000000>;
+   };
+
+   phantom_axi@4d000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x4d000000 0x1000000>;
+   };
+
+   phantom_axi@4e000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x4e000000 0x1000000>;
+   };
+
+   phantom_interrupt@4f000000 { // explicit implementation of AXI Interrupt Controller
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      interrupt-parent = <&intc>; // use of on-chip global interrupt controller
+      interrupts = <0 29 4>; // format 0 <int number + 29> <type>' (type 1' = rising edge sensitive, '4' = level sensitive)
+       reg = <0x4f000000 0x200>;
+   };
+
+   phantom_axi@80000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x80000000 0x1000000>;
+   };
+
+   phantom_axi@81000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x81000000 0x1000000>;
+   };
+
+   phantom_axi@82000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x82000000 0x1000000>;
+   };
+
+   phantom_axi@83000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x83000000 0x1000000>;
+   };
+
+   phantom_axi@84000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x84000000 0x1000000>;
+   };
+
+   phantom_axi@85000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x85000000 0x1000000>;
+   };
+
+   phantom_axi@86000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x86000000 0x1000000>;
+   };
+
+   phantom_axi@87000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x87000000 0x1000000>;
+   };
+
+   phantom_axi@88000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x88000000 0x1000000>;
+   };
+
+   phantom_axi@89000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x89000000 0x1000000>;
+   };
+
+   phantom_axi@8a000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x8a000000 0x1000000>;
+   };
+
+   phantom_axi@8b000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x8b000000 0x1000000>;
+   };
+
+   phantom_axi@8c000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x8c000000 0x1000000>;
+   };
+
+   phantom_axi@8d000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x8d000000 0x1000000>;
+   };
+
+   phantom_axi@8e000000 {
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      #address-cells = <1>;
+      #size-cells = <1>;
+      reg = <0x8e000000 0x1000000>;
+   };
+
+   phantom_interrupt@8f000000 { // explicit implementation of AXI Interrupt Controller
+      compatible = "phantom_platform,generic-uio,ui_pdrv";
+      interrupt-parent = <&intc>; // use of on-chip global interrupt controller
+      interrupts = <0 30 4>; // format 0 <int number + 29> <type>' (type 1' = rising edge sensitive, '4' = level sensitive)
+       reg = <0x8f000000 0x200>;
+   };
+
+};
