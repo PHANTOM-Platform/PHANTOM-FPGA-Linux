@@ -33,7 +33,6 @@ function compile_environment {
 	export LD_LIBRARY_PATH=
 }
 
-
 function build_api {
 	cd phantom_api
 	make DEFINES="-DSD_CARD_PHANTOM_LOC=\\\"/boot/\\\" -DTARGET_BOARD=\\\"$BOARD_PART\\\" -DTARGET_FPGA=0"
@@ -46,6 +45,14 @@ function build_multistrap {
 	cd rootfs
 	multistrap -f multistrap.conf
 	sudo ./zynq_setup.sh
+	cd ..
+}
+
+function build_devicetree {
+	cd linux-xlnx
+	cp ../arch/*.dtsi arch/arm/boot/dts/
+	make ARCH=arm $DEVICETREE
+	cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
 	cd ..
 }
 
@@ -62,8 +69,9 @@ if [ ! "$1" == "sources" ]; then
 	fi
 fi
 
-case "$1" in
 
+
+case "$1" in
 	'sources' )
 		echo "Checking out sources..."
 		git clone --depth 1 https://github.com/Xilinx/linux-xlnx.git
@@ -76,8 +84,9 @@ case "$1" in
 		make xilinx_zynq_defconfig
 		make uImage
 		cp arch/arm/boot/uImage ../images/
-		make ARCH=arm $DEVICETREE
-		cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
+		cd ..
+
+		build_devicetree
 	;;
 
 	'uboot' )
@@ -91,6 +100,13 @@ case "$1" in
 	'rootfs' )
 		build_multistrap
 		build_api
+
+		echo "Building and installing kernel modules..."
+		cd linux-xlnx
+		compile_environment
+		make modules
+		make modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
+		cd ..
 	;;
 
 	'api' )
@@ -103,13 +119,6 @@ case "$1" in
 	;;
 
 	'sdcard' )
-		echo "Building and installing kernel modules..."
-		cd linux-xlnx
-		compile_environment
-		make modules
-		make modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
-		cd ..
-
 		echo "Setting up boot partition..."
 		cp images/BOOT.bin $SDCARD_BOOT
 		cp images/devicetree.dtb $SDCARD_BOOT
@@ -122,7 +131,7 @@ case "$1" in
 		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
 		cp hwproj/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
 
-		echo "Copying root filesystem (will ask for root)..."
+		echo "Copying root filesystem (may ask for root)..."
 		TARGETDIR=$SDCARD_ROOTFS
 		sudo cp -r rootfs/rootfs/* $TARGETDIR
 
@@ -134,6 +143,10 @@ case "$1" in
 		vivado -mode batch -source implement_project.tcl -notrace
 		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
 		cp ../hwproj/phantom_fpga_conf.xml ../images/phantom_fpga_conf.xml
+	;;
+
+	'devicetree' )
+		build_devicetree
 	;;
 
 	'clean' )
@@ -148,7 +161,7 @@ case "$1" in
 	;;
 
 	'' )
-		echo "Usage: $0 [sources | kernel | uboot | rootfs | hwproject | implement | clean]"
+		echo "Usage: $0 [sources | kernel | uboot | rootfs | hwproject | devicetree | implement | clean]"
 	;;
 
 esac
