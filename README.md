@@ -83,3 +83,14 @@ Once set, execute the following:
 where `ipcore1` and `ipcore2` are the PHANTOM IP cores to add to this project. This will create a Vivado project at `/hwproject` which you can build using Vivado as normal, or implement from the command line with:
 
 	./make.sh implement
+
+
+## Note on Device Trees
+
+You must have a suitable device tree for the kernel to work on your target board. Xilinx's repository contains device trees for many boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders. These all include a base tree called `zynq-7000.dtsi` which describes the generic Zynq SoC architecture. This project includes a customised `zynq-7000.dtsi`, the only difference being that the customised version includes the file `arch/phantom_uio_devices.dtsi` to inform the kernel about the PHANTOM architecture infrastructure. This is all handled by `./make.sh`.
+
+If your target board requires an entirely custom device tree that is not included in the Xilinx repository, ensure that it includes the line:
+
+ 	#include "phantom_uio_devices.dtsi"
+
+Then compile your device tree to a `.dtb` file called `images/devicetree.dtb` before running `./make.sh sdcard`.
