@@ -6,12 +6,23 @@ If you are using the ZC706, you only need set up an SD card, copy over the image
 
 Note that many of these commands require that the Xilinx tools are in your `$PATH` so ensure that they are correctly installed.
 
+## Required packages
+
+Before running the build script you will need:
+ * [multistrap](https://wiki.debian.org/Multistrap) and associated ARM compilers
+ * [The Device Tree Compiler](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
+ * [mkimage](https://linux.die.net/man/1/mkimage)
+ * libssl
+ * QEmu
+
+On Debian or Ubuntu-based distributions you can simply do the following:
+
+	sudo apt-get install multistrap device-tree-compiler u-boot-tools libssl-dev dpkg-dev qemu-user-static
 
 ## Quick Start
 
 If you are using the ZC706 and so are happy to use the pre-built kernel, you can simply do the following:
 
-	sudo apt-get install multistrap dpkg-dev qemu-user-static
 	./make.sh rootfs
 
 The script will ask for root permissions after downloading the packages to allow it to chroot into the new filesystem in order to change the root password.
