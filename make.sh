@@ -92,7 +92,7 @@ case "$1" in
 	'uboot' )
 		cd u-boot-xlnx
 		compile_environment
-		make $UBOOT_TARGET_defconfig
+		make ${UBOOT_TARGET}_defconfig
 		make
  		cp u-boot ../images/u-boot.elf
 	;;
