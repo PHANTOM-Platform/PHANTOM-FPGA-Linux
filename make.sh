@@ -24,6 +24,12 @@ BOARD_PART=xilinx.com:zc706:part0:1.3
 SDCARD_BOOT=/media/$USER/BOOT/
 SDCARD_ROOTFS=/media/$USER/Linux/
 
+# The version of the Xilinx Linux kernel and U-Boot to use.
+# It is recommended to change the Vivado version to that used to build the hardware.
+VIVADO_VERSION=2017.2
+KERNEL_TAG=xilinx-v${VIVADO_VERSION}
+UBOOT_TAG=xilinx-v${VIVADO_VERSION}
+
 
 function compile_environment {
 	export ARCH=arm
@@ -74,8 +80,8 @@ fi
 case "$1" in
 	'sources' )
 		echo "Checking out sources..."
-		git clone --depth 1 https://github.com/Xilinx/linux-xlnx.git
-		git clone --depth 1 https://github.com/Xilinx/u-boot-xlnx.git
+		git clone --branch $KERNEL_TAG --depth 1 https://github.com/Xilinx/linux-xlnx.git
+		git clone --branch $UBOOT_TAG --depth 1 https://github.com/Xilinx/u-boot-xlnx.git
 	;;
 
 	'kernel' )
