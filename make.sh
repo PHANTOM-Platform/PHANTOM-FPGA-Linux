@@ -153,10 +153,10 @@ case "$1" in
 	read -r -p "Are you sure? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 		then
-			rf -rf linux-xlnx u-boot-xlnx
-			rf -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf
-			rf -rf rootfs/rootfs
-			rf -rf hwproj
+			rm -rf linux-xlnx u-boot-xlnx
+			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf
+			rm -rf rootfs/rootfs
+			rm -rf hwproj
 		fi
 	;;
 
