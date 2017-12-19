@@ -7,7 +7,7 @@
 # Common examples are: zynq-zc706.dtb zynq-zed.dtb zynq-zybo.dtb
 DEVICETREE=zynq-zc706.dtb
 
-# The target to use for uBoot, these are in the `u-boot-xlnx/configs` directory.
+# The target to use for U-Boot, these are in the `u-boot-xlnx/configs` directory.
 # Common examples are: zynq_zc706 zynq_zed zynq_zybo
 UBOOT_TARGET=zynq_zc706
 
@@ -59,12 +59,12 @@ function build_devicetree {
 
 if [ ! "$1" == "sources" ]; then
 	if [ ! -d "linux-xlnx" ]; then
-		echo "Run ./make.sh sources first to grab the kernel and uboot sources."
+		echo "Run ./make.sh sources first to grab the kernel and U-Boot sources."
 		exit
 	fi
 
 	if [ ! -d "u-boot-xlnx" ]; then
-		echo "Run ./make.sh sources first to grab the kernel and uboot sources."
+		echo "Run ./make.sh sources first to grab the kernel and U-Boot sources."
 		exit
 	fi
 fi
