@@ -186,7 +186,8 @@ case "$1" in
 		fi
 	;;
 
-	'' )
+	* )
+		echo "Unknown option: '$1'"
 		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
 	;;
 
