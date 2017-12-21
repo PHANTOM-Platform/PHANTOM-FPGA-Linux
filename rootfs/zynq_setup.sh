@@ -51,4 +51,4 @@ chroot $TARGET_ROOTFS_DIR chown root:root -R /bin /usr/bin /sbin /usr/sbin
 echo "Changing password for the rootfs root user:"
 chroot $TARGET_ROOTFS_DIR passwd root
 
-umount $TARGET_ROOTFS_DIR/dev/
+umount -lf $TARGET_ROOTFS_DIR/dev/
