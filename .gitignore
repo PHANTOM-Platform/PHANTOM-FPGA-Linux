@@ -1,7 +1,7 @@
 linux-xlnx/
 u-boot-xlnx/
 rootfs/rootfs/
-hwproj
+hwproj/
 fsbl/
 *.DS_Store
 *~
