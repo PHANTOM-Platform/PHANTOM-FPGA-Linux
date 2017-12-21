@@ -29,8 +29,8 @@ The script will ask for root permissions after downloading the packages to allow
 
 Now ensure your PHANTOM-compatible IP cores (see later) are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
 
-	./make hwproject ipcore1 ipcore2
-	./make implement
+	./make.sh hwproject ipcore1 ipcore2
+	./make.sh implement
 
 Now create an SD card for the board.
 
@@ -43,7 +43,7 @@ Now we can create an SD card to contain the compiled boot image and root filesys
 
 Ensure that the SD card partitions are mounted and that the `SDCARD_BOOT` and `SDCARD_ROOTFS` variables at the top of `make.sh` are correctly set. Now copy all the files to the SD card:
 
-	./make sdcard
+	./make.sh sdcard
 
 You are now ready to go!
 
@@ -73,7 +73,7 @@ There are examples in `make.sh` itself of what these variables should be set to 
 
 `KERNEL_TAG` and `UBOOT_TAG` should be set to the appropriate tag (or branch) name to checkout from the Xilinx repositories. For best compatibility, this should typically match the version of Vivado used to build the hardware. To achieve this, simply set `VIVADO_VERSION` and use the default tag strings. The default version is `2017.2`.
 
-Once set, grab the kernel and uBoot sources and build them with the following:
+Once set, grab the kernel and U-Boot sources and build them with the following:
 
 	./make.sh sources
 	./make.sh uboot
@@ -101,14 +101,16 @@ You must have a suitable device tree for the kernel to work on your target board
 
 If your target board requires an entirely custom device tree that is not included in the Xilinx repository, ensure that it includes the line:
 
- 	#include "phantom_uio_devices.dtsi"
+	#include "phantom_uio_devices.dtsi"
 
 Then compile your device tree to a `.dtb` file called `images/devicetree.dtb` before running `./make.sh sdcard`.
 
 
 ### Generate an FSBL
 
-An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706. For other boards you can generate an FSBL based on the hardware design, using:
+An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706.
+
+You can generate a new FSBL based on the current hardware design, using:
 
 	./make.sh fsbl
 
