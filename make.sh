@@ -168,6 +168,11 @@ case "$1" in
 		cp fsbl/executable.elf images/fsbl.elf
 	;;
 
+	'bootimage' )
+		cd arch
+		bootgen -image bootimage.bif -arch zynq -w -o i ../images/BOOT.bin
+	;;
+
 	'clean' )
 	read -r -p "Are you sure? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
@@ -175,14 +180,14 @@ case "$1" in
 			sudo umount -lf rootfs/rootfs/dev
 			sudo rm -rf rootfs/rootfs
 			rm -rf linux-xlnx u-boot-xlnx
-			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf images/fsbl.elf
+			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf images/fsbl.elf images/BOOT.bin
 			rm -rf hwproj
 			rm -rf fsbl
 		fi
 	;;
 
 	'' )
-		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|clean]"
+		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
 	;;
 
 esac

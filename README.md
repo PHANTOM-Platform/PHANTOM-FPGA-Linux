@@ -117,8 +117,10 @@ This will create `images/fsbl.elf`. Alternatively, an FSBL can be created using 
 
 ### Create a boot image
 
-We now need to combine the FSBL, uBoot, and the kernel, all into a single image. Again this is done using Xilinx SDK. In the SDK menus, select `Xilinx Tools -> Create Boot Image`.
+We now need to combine the FSBL and U-Boot into a single boot image. The `images` folder contains a prebuilt `BOOT.bin` containing the bootloaders generated for the ZC706.
 
-Select `Create new BIF file`, and set the output paths to where you want the image to be built. Now in the boot image partitions click add, select `images/fsbl.elf` and ensure Partition type is set to `bootloader`. Click OK.
+If the FSBL or U-Boot executables are changed, the boot image can be recreated using:
 
-Then add `images/u-boot.elf`, `images/uImage`, and `images/devicetree.dtb` as `datafile` partitions. Click `create image`. This will create `BOOT.bin` which you should place in the `images` directory.
+	./make.sh bootimage
+
+This will create `images/BOOT.bin`. Alternatively, a boot image can be created using Xilinx SDK.
