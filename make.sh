@@ -173,7 +173,7 @@ case "$1" in
 	;;
 
 	'' )
-		echo "Usage: $0 [sources | kernel | uboot | rootfs | hwproject | devicetree | implement | clean]"
+		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|clean]"
 	;;
 
 esac
