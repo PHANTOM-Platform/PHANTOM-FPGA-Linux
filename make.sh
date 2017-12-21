@@ -140,7 +140,7 @@ case "$1" in
 		mkdir -p $SDCARD_BOOT/fpga/bitfile
 
 		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
-		cp hwproj/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
+		cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
 
 		echo "Copying root filesystem (may ask for root)..."
 		TARGETDIR=$SDCARD_ROOTFS
