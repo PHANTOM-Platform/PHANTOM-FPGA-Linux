@@ -160,6 +160,14 @@ case "$1" in
 		build_devicetree
 	;;
 
+	'fsbl' )
+		mkdir -p fsbl
+		cd arch
+		hsi -nojournal -nolog -source generate_fsbl.tcl
+		cd ..
+		cp fsbl/executable.elf images/fsbl.elf
+	;;
+
 	'clean' )
 	read -r -p "Are you sure? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
@@ -167,13 +175,14 @@ case "$1" in
 			sudo umount -lf rootfs/rootfs/dev
 			sudo rm -rf rootfs/rootfs
 			rm -rf linux-xlnx u-boot-xlnx
-			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf
+			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf images/fsbl.elf
 			rm -rf hwproj
+			rm -rf fsbl
 		fi
 	;;
 
 	'' )
-		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|clean]"
+		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|clean]"
 	;;
 
 esac

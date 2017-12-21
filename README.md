@@ -80,20 +80,6 @@ Once set, grab the kernel and uBoot sources and build them with the following:
 	./make.sh kernel
 
 
-### Get an FSBL
-
-An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706. For other boards you should use Xilinx SDK to create and compile an FSBL. Using SDK, create a New Application Project using the 'Zynq FSBL' template. [Consult the Xilinx documentation](http://www.wiki.xilinx.com/Build+FSBL) for how to do this. Use SDK to compile the FSBL project to an ELF file.
-
-
-### Create a boot image
-
-We now need to combine the FSBL, uBoot, and the kernel, all into a single image. Again this is done using Xilinx SDK. In the SDK menus, select `Xilinx Tools -> Create Boot Image`.
-
-Select `Create new BIF file`, and set the output paths to where you want the image to be built. Now in the boot image partitions click add, select `images/fsbl.elf` and ensure Partition type is set to `bootloader`. Click OK.
-
-Then add `images/u-boot.elf`, `images/uImage`, and `images/devicetree.dtb` as `datafile` partitions. Click `create image`. This will create `BOOT.bin` which you should place in the `images` directory.
-
-
 ## Creating an FPGA hardware design
 
 The PHANTOM distribution also contains the scripts which create PHANTOM-compatible FPGA designs. A PHANTOM hardware design encapsulates a set of IP cores, makes them available to the software running in the Linux distribution, and includes the various security and monitoring requirements of the PHANTOM platform.
@@ -118,3 +104,21 @@ If your target board requires an entirely custom device tree that is not include
  	#include "phantom_uio_devices.dtsi"
 
 Then compile your device tree to a `.dtb` file called `images/devicetree.dtb` before running `./make.sh sdcard`.
+
+
+### Generate an FSBL
+
+An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706. For other boards you can generate an FSBL based on the hardware design, using:
+
+	./make.sh fsbl
+
+This will create `images/fsbl.elf`. Alternatively, an FSBL can be created using Xilinx SDK.
+
+
+### Create a boot image
+
+We now need to combine the FSBL, uBoot, and the kernel, all into a single image. Again this is done using Xilinx SDK. In the SDK menus, select `Xilinx Tools -> Create Boot Image`.
+
+Select `Create new BIF file`, and set the output paths to where you want the image to be built. Now in the boot image partitions click add, select `images/fsbl.elf` and ensure Partition type is set to `bootloader`. Click OK.
+
+Then add `images/u-boot.elf`, `images/uImage`, and `images/devicetree.dtb` as `datafile` partitions. Click `create image`. This will create `BOOT.bin` which you should place in the `images` directory.
