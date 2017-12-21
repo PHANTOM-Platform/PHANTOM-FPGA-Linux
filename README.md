@@ -71,6 +71,8 @@ To rebuild the images, the first task is to edit options at the top of `make.sh`
 
 There are examples in `make.sh` itself of what these variables should be set to for other common boards.
 
+`KERNEL_TAG` and `UBOOT_TAG` should be set to the appropriate tag (or branch) name to checkout from the Xilinx repositories. For best compatibility, this should typically match the version of Vivado used to build the hardware. To achieve this, simply set `VIVADO_VERSION` and use the default tag strings. The default version is `2017.2`.
+
 Once set, grab the kernel and uBoot sources and build them with the following:
 
 	./make.sh sources
