@@ -42,14 +42,17 @@ function compile_environment {
 function build_api {
 	cd phantom_api
 	make DEFINES="-DSD_CARD_PHANTOM_LOC=\\\"/boot/\\\" -DTARGET_BOARD=\\\"$BOARD_PART\\\" -DTARGET_FPGA=0"
-	cp libphantom.so ../rootfs/rootfs/usr/lib/
-	cp *.h ../rootfs/rootfs/usr/include/
 	cd ..
+}
+
+function copy_api {
+	sudo cp -v phantom_api/libphantom.so rootfs/rootfs/usr/lib/
+	sudo cp -v phantom_api/*.h rootfs/rootfs/usr/include/
 }
 
 function build_multistrap {
 	cd rootfs
-	multistrap -f multistrap.conf
+	sudo multistrap -f multistrap.conf
 	sudo ./zynq_setup.sh
 	cd ..
 }
@@ -106,17 +109,19 @@ case "$1" in
 	'rootfs' )
 		build_multistrap
 		build_api
+		copy_api
 
 		echo "Building and installing kernel modules..."
 		cd linux-xlnx
 		compile_environment
 		make modules
-		make modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
+		sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
 		cd ..
 	;;
 
 	'api' )
 		build_api
+		copy_api
 	;;
 
 	'hwproject' )
@@ -139,7 +144,7 @@ case "$1" in
 
 		echo "Copying root filesystem (may ask for root)..."
 		TARGETDIR=$SDCARD_ROOTFS
-		sudo cp -r rootfs/rootfs/* $TARGETDIR
+		sudo cp -a rootfs/rootfs/* $TARGETDIR
 
 		echo "Done."
 	;;
@@ -159,9 +164,10 @@ case "$1" in
 	read -r -p "Are you sure? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 		then
+			sudo umount -lf rootfs/rootfs/dev
+			sudo rm -rf rootfs/rootfs
 			rm -rf linux-xlnx u-boot-xlnx
 			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf
-			rm -rf rootfs/rootfs
 			rm -rf hwproj
 		fi
 	;;
