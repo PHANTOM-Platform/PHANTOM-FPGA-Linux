@@ -91,6 +91,7 @@ case "$1" in
 		cd linux-xlnx
 		compile_environment
 		make xilinx_zynq_defconfig
+		cat ../custom/kernel_config >> .config
 		make uImage
 		cp arch/arm/boot/uImage ../images/
 		cd ..

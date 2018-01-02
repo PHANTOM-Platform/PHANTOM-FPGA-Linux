@@ -73,6 +73,8 @@ There are examples in `make.sh` itself of what these variables should be set to 
 
 `KERNEL_TAG` and `UBOOT_TAG` should be set to the appropriate tag (or branch) name to checkout from the Xilinx repositories. For best compatibility, this should typically match the version of Vivado used to build the hardware. To achieve this, simply set `VIVADO_VERSION` and use the default tag strings. The default version is `2017.2`.
 
+If any extra kernel customisation is needed, configuration parameters can be added to the `/custom/kernel_config` file, whose contents will be appended to the default config (`xilinx_zynq_defconfig`) before the kernel is built.
+
 Once set, grab the kernel and U-Boot sources and build them with the following:
 
 	./make.sh sources
