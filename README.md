@@ -114,7 +114,7 @@ If your target board requires an entirely custom device tree that is not include
 Then compile your device tree to a `.dtb` file called `images/devicetree.dtb` before running `./make.sh sdcard`.
 
 
-### Generate an FSBL
+## Generate an FSBL
 
 An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706.
 
@@ -125,7 +125,7 @@ You can generate a new FSBL based on the current hardware design, using:
 This will create `images/fsbl.elf`. Alternatively, an FSBL can be created using Xilinx SDK.
 
 
-### Create a boot image
+## Create a boot image
 
 We now need to combine the FSBL and U-Boot into a single boot image. The `images` folder contains a prebuilt `BOOT.bin` containing the bootloaders generated for the ZC706.
 
