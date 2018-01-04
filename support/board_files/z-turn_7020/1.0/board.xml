@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<board schema_version="2.1" vendor="myirtech.com" name="z-turn_7020" display_name="Z-turn (Zynq-7020)" url="http://www.myirtech.com/list.asp?id=502" preset_file="preset.xml">
+  <images>
+    <image name="zturntop.jpg" display_name="Z-turn Board" sub_type="board">
+      <description>Z-turn Board Image</description>
+    </image>
+  </images>
+  <compatible_board_revisions>
+    <revision id="0">1.0</revision>
+  </compatible_board_revisions>
+  <file_version>1.0</file_version>
+  <description>Z-turn (Zynq-7020)</description>
+  <components>
+    <component name="part0" display_name="Z-turn (Zynq-7020)" type="fpga" part_name="xc7z020clg400-1" pin_map_file="part0_pins.xml" vendor="xilinx" spec_url="www.xilinx.com">
+      <description>FPGA part on the board</description>
+      <interfaces>
+        <interface mode="master" name="ps7_fixedio" type="xilinx.com:display_processing_system7:fixedio_rtl:1.0" of_component="ps7_fixedio" preset_proc="ps7_preset"> 
+          <preferred_ips>
+            <preferred_ip vendor="xilinx.com" library="ip" name="processing_system7" order="0"/>
+          </preferred_ips>
+        </interface>
+      </interfaces>
+    </component>
+    <component name="ps7_fixedio" display_name="PS7 fixed IO" type="chip" sub_type="fixed_io" major_group=""/>
+  </components>
+  <jtag_chains>
+    <jtag_chain name="chain1">
+      <position name="0" component="part0"/>
+    </jtag_chain>
+  </jtag_chains>
+  <connections>	
+  </connections>
+  <ip_associated_rules>
+    <ip_associated_rule name="default">
+    </ip_associated_rule>
+  </ip_associated_rules>
+</board>

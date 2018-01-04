@@ -134,3 +134,10 @@ If the FSBL or U-Boot executables are changed, the boot image can be recreated u
 	./make.sh bootimage
 
 This will create `images/BOOT.bin`. Alternatively, a boot image can be created using Xilinx SDK.
+
+
+## Supporting files for additional boards, etc.
+
+The [`support/`](support/) folder contains a range of additional files that can be installed for working with non-standard boards, as well as potential kernel patches and configuration options.
+
+See the [support README file](support/README.md) for more information.
