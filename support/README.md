@@ -25,6 +25,15 @@ To use these, copy the required lines from these files to the end of `custom/ker
 Current files are:
 * Required drivers for USB Ethernet to an [Intel Edison](https://software.intel.com/en-us/connecting-to-intel-edison-board-using-ethernet-over-usb) board - `edison_ethernet`
 
+### Patches
+
+The [`linux/patches/`](linux/patches/) folder contains patches to kernel code that are not included in the Xilinx repository.
+
+To use these files, copy them to `linux-xlnx/` after fetching kernel sources, and apply manually using a standard `patch` tool.
+
+Currently included patches are:
+* [Fix for issue with Zynq memory regions](https://forums.xilinx.com/t5/Embedded-Linux/Problem-w-USB-mass-storage-on-ZC702-using-linux-xlnx-4-9/td-p/748865) (not needed for 2017.3 and later) - `0001-zynq-kernel-mempry-reserve-issue.patch`
+
 
 ## U-Boot
 
