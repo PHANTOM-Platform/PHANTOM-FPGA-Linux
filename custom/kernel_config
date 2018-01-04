@@ -4,3 +4,4 @@
 # Add additional kernel configuration options here,
 # to be appended to the default '.config' file.
 #
+CONFIG_LOCALVERSION="-xilinx-phantom"
