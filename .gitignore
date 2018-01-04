@@ -3,6 +3,7 @@ u-boot-xlnx/
 rootfs/rootfs/
 hwproj/
 fsbl/
+images/
 *.DS_Store
 *~
 

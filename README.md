@@ -21,7 +21,13 @@ On Debian or Ubuntu-based distributions you can simply do the following:
 
 ## Quick Start
 
-If you are using the ZC706 and so are happy to use the pre-built kernel, you can simply do the following:
+If you are using the ZC706 and so are happy to use the pre-built kernel, you can simply do the following.
+
+First, copy the included pre-built kernel and boot images to be used on the board:
+
+	./make.sh prebuilt
+
+Next, build the Linux root file system:
 
 	./make.sh rootfs
 

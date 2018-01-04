@@ -58,6 +58,7 @@ function build_multistrap {
 }
 
 function build_devicetree {
+	mkdir -p images
 	cd linux-xlnx
 	cp ../arch/*.dtsi arch/arm/boot/dts/
 	make ARCH=arm $DEVICETREE
@@ -81,6 +82,12 @@ fi
 
 
 case "$1" in
+	'prebuilt' )
+		echo "Copying pre-built outputs to images folder..."
+		mkdir -p images
+		cp -rf prebuilt/* images
+	;;
+
 	'sources' )
 		echo "Checking out sources..."
 		git clone --branch $KERNEL_TAG --depth 1 https://github.com/Xilinx/linux-xlnx.git
@@ -88,6 +95,7 @@ case "$1" in
 	;;
 
 	'kernel' )
+		mkdir -p images
 		cd linux-xlnx
 		compile_environment
 		make xilinx_zynq_defconfig
@@ -100,6 +108,7 @@ case "$1" in
 	;;
 
 	'uboot' )
+		mkdir -p images
 		cd u-boot-xlnx
 		compile_environment
 		make ${UBOOT_TARGET}_defconfig
@@ -151,6 +160,7 @@ case "$1" in
 	;;
 
 	'implement' )
+		mkdir -p images
 		cd arch
 		vivado -mode batch -source implement_project.tcl -notrace
 		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
@@ -162,6 +172,7 @@ case "$1" in
 	;;
 
 	'fsbl' )
+		mkdir -p images
 		mkdir -p fsbl
 		cd arch
 		hsi -nojournal -nolog -source generate_fsbl.tcl
@@ -170,6 +181,7 @@ case "$1" in
 	;;
 
 	'bootimage' )
+		mkdir -p images
 		cd arch
 		bootgen -image bootimage.bif -arch zynq -w -o i ../images/BOOT.bin
 	;;
@@ -181,7 +193,7 @@ case "$1" in
 			sudo umount -lf rootfs/rootfs/dev
 			sudo rm -rf rootfs/rootfs
 			rm -rf linux-xlnx u-boot-xlnx
-			rm -rf images/uImage images/devicetree.dtb images/bitstream.bit images/u-boot.elf images/fsbl.elf images/BOOT.bin
+			rm -rf images
 			rm -rf hwproj
 			rm -rf fsbl
 		fi
@@ -189,7 +201,7 @@ case "$1" in
 
 	* )
 		echo "Unknown option: '$1'"
-		echo "Usage: $0 [sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
+		echo "Usage: $0 [prebuilt|sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
 	;;
 
 esac
