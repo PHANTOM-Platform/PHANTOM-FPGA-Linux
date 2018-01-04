@@ -66,18 +66,19 @@ function build_devicetree {
 	cd ..
 }
 
+function check_sources {
+	if [ ! "$1" == "sources" ]; then
+		if [ ! -d "linux-xlnx" ]; then
+			echo "Run $0 sources first to grab the kernel and U-Boot sources."
+			exit
+		fi
 
-if [ ! "$1" == "sources" ]; then
-	if [ ! -d "linux-xlnx" ]; then
-		echo "Run ./make.sh sources first to grab the kernel and U-Boot sources."
-		exit
+		if [ ! -d "u-boot-xlnx" ]; then
+			echo "Run $0 sources first to grab the kernel and U-Boot sources."
+			exit
+		fi
 	fi
-
-	if [ ! -d "u-boot-xlnx" ]; then
-		echo "Run ./make.sh sources first to grab the kernel and U-Boot sources."
-		exit
-	fi
-fi
+}
 
 
 
@@ -95,6 +96,7 @@ case "$1" in
 	;;
 
 	'kernel' )
+		check_sources
 		mkdir -p images
 		cd linux-xlnx
 		compile_environment
@@ -108,6 +110,7 @@ case "$1" in
 	;;
 
 	'uboot' )
+		check_sources
 		mkdir -p images
 		cd u-boot-xlnx
 		compile_environment
@@ -122,6 +125,7 @@ case "$1" in
 		copy_api
 
 		echo "Building and installing kernel modules..."
+		check_sources
 		cd linux-xlnx
 		compile_environment
 		make modules
@@ -169,6 +173,7 @@ case "$1" in
 	;;
 
 	'devicetree' )
+		check_sources
 		build_devicetree
 	;;
 
