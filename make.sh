@@ -155,6 +155,7 @@ case "$1" in
 		echo "Copying root filesystem (may ask for root)..."
 		TARGETDIR=$SDCARD_ROOTFS
 		sudo cp -a rootfs/rootfs/* $TARGETDIR
+		sync
 
 		echo "Done."
 	;;
