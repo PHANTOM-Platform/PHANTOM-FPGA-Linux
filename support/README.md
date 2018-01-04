@@ -16,6 +16,15 @@ To use these files, copy them to `linux-xlnx/arch/arm/boot/dts/` after fetching 
 Currently supported boards are:
 * [MYIR Z-turn board](http://www.myirtech.com/list.asp?id=502) - `zynq-zturn.dts`
 
+### Configuration options
+
+The [`linux/config/`](linux/config/) folder contains additional kernel configuration parameters for certain hardware.
+
+To use these, copy the required lines from these files to the end of `custom/kernel_config` before building the kernel.
+
+Current files are:
+* Required drivers for USB Ethernet to an [Intel Edison](https://software.intel.com/en-us/connecting-to-intel-edison-board-using-ethernet-over-usb) board - `edison_ethernet`
+
 
 ## U-Boot
 
