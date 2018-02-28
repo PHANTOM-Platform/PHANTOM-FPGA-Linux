@@ -33,6 +33,8 @@ Next, build the Linux root file system:
 
 The script will ask for root permissions after downloading the packages to allow it to chroot into the new filesystem in order to change the root password.
 
+Note: if kernel modules and Open MPI are required, these should be built separately before the root file system.
+
 Now ensure your PHANTOM-compatible IP cores (see later) are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
 
 	./make.sh hwproject ipcore1 ipcore2
@@ -86,6 +88,18 @@ Once set, grab the kernel and U-Boot sources and build them with the following:
 	./make.sh sources
 	./make.sh uboot
 	./make.sh kernel
+
+
+## Building Open MPI
+
+[Open MPI](https://www.open-mpi.org) can be downloaded and built for Zynq using the make script, and will be installed to `/opt` on the created root file system by default.
+
+Set the `OMPI_VERSION` variable in `make.sh` as required (the default is to use v3.0.0). If needed, the download URL can also be customised by changing `OMPI_URL`.
+
+Open MPI can then be built and installed with the following:
+
+	./make.sh sources
+	./make.sh ompi
 
 
 ## Creating an FPGA hardware design

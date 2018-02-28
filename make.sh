@@ -24,11 +24,15 @@ BOARD_PART=xilinx.com:zc706:part0:1.3
 SDCARD_BOOT=/media/$USER/BOOT/
 SDCARD_ROOTFS=/media/$USER/Linux/
 
-# The version of the Xilinx Linux kernel and U-Boot to use.
-# It is recommended to change the Vivado version to that used to build the hardware.
+# The version of the Xilinx Linux kernel, U-Boot and Open MPI to use.
+# It is recommended to change the Vivado version to that used for building the hardware.
 VIVADO_VERSION=2017.2
+OMPI_VERSION=3.0.0
+
+# The following are generated from the versions specified above, but can be customised if required.
 KERNEL_TAG=xilinx-v${VIVADO_VERSION}
 UBOOT_TAG=xilinx-v${VIVADO_VERSION}
+OMPI_URL=https://www.open-mpi.org/software/ompi/v${OMPI_VERSION%.*}/downloads/openmpi-${OMPI_VERSION}.tar.bz2
 
 
 function compile_environment {
@@ -66,15 +70,23 @@ function build_devicetree {
 	cd ..
 }
 
+function build_ompi {
+	cd ompi
+	mkdir -p build
+	./configure --prefix=`pwd`/build --disable-mpi-fortran --host=arm-linux-gnueabihf
+	make all install
+	cd ..
+}
+
+function copy_ompi {
+	echo "Copying Open MPI to rootfs..."
+	sudo cp -a ompi/build rootfs/rootfs/opt/openmpi
+}
+
 function check_sources {
 	if [ ! "$1" == "sources" ]; then
-		if [ ! -d "linux-xlnx" ]; then
-			echo "Run $0 sources first to grab the kernel and U-Boot sources."
-			exit
-		fi
-
-		if [ ! -d "u-boot-xlnx" ]; then
-			echo "Run $0 sources first to grab the kernel and U-Boot sources."
+		if [ ! -d "linux-xlnx" ] || [ ! -d "u-boot-xlnx" ] || [ ! -d "ompi" ]; then
+			echo "Run '$0 sources' first to grab the kernel, U-Boot and Open MPI sources."
 			exit
 		fi
 	fi
@@ -93,6 +105,10 @@ case "$1" in
 		echo "Checking out sources..."
 		git clone --branch $KERNEL_TAG --depth 1 https://github.com/Xilinx/linux-xlnx.git
 		git clone --branch $UBOOT_TAG --depth 1 https://github.com/Xilinx/u-boot-xlnx.git
+		wget -O ompi.tar.bz2 $OMPI_URL
+		tar -xf ompi.tar.bz2
+		rm -f ompi.tar.bz2
+		mv openmpi-${OMPI_VERSION} ompi
 	;;
 
 	'kernel' )
@@ -119,10 +135,17 @@ case "$1" in
  		cp u-boot ../images/u-boot.elf
 	;;
 
+	'ompi' )
+		check_sources
+		build_ompi
+		copy_ompi
+	;;
+
 	'rootfs' )
 		build_multistrap
 		build_api
 		copy_api
+		copy_ompi
 
 		echo "Building and installing kernel modules..."
 		check_sources
@@ -198,7 +221,7 @@ case "$1" in
 		then
 			sudo umount -lf rootfs/rootfs/dev
 			sudo rm -rf rootfs/rootfs
-			rm -rf linux-xlnx u-boot-xlnx
+			rm -rf linux-xlnx u-boot-xlnx ompi
 			rm -rf images
 			rm -rf hwproj
 			rm -rf fsbl
@@ -207,7 +230,7 @@ case "$1" in
 
 	* )
 		echo "Unknown option: '$1'"
-		echo "Usage: $0 [prebuilt|sources|kernel|uboot|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
+		echo "Usage: $0 [prebuilt|sources|kernel|uboot|ompi|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
 	;;
 
 esac

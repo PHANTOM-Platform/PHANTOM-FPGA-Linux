@@ -1,5 +1,6 @@
 linux-xlnx/
 u-boot-xlnx/
+ompi/
 rootfs/rootfs/
 hwproj/
 fsbl/
