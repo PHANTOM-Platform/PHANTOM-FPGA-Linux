@@ -82,7 +82,8 @@ function build_ompi {
 
 function copy_ompi {
 	echo "Copying Open MPI to rootfs..."
-	sudo cp -a ompi/build rootfs/rootfs/opt/openmpi
+	sudo rm -rf rootfs/rootfs/opt/openmpi
+	sudo cp -af --no-preserve=ownership ompi/build rootfs/rootfs/opt/openmpi
 }
 
 function check_sources {
