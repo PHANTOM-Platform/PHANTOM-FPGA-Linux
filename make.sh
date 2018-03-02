@@ -58,6 +58,8 @@ function build_multistrap {
 	cd rootfs
 	sudo multistrap -f multistrap.conf
 	sudo ./zynq_setup.sh
+	sudo cp -afv --no-preserve=ownership overlay/. rootfs/
+	sudo rm -f rootfs/README.md
 	cd ..
 }
 
