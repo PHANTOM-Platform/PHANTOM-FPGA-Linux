@@ -9,11 +9,11 @@ Note that many of these commands require that the Xilinx tools are in your `$PAT
 ## Required packages
 
 Before running the build script you will need:
- * [multistrap](https://wiki.debian.org/Multistrap) and associated ARM compilers
+ * [Multistrap](https://wiki.debian.org/Multistrap) and associated ARM compilers
  * [The Device Tree Compiler](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
  * [mkimage](https://linux.die.net/man/1/mkimage)
  * libssl
- * QEmu
+ * QEMU
 
 On Debian or Ubuntu-based distributions you can simply do the following:
 
@@ -31,7 +31,7 @@ Next, build the Linux root file system:
 
 	./make.sh rootfs
 
-The script will ask for root permissions after downloading the packages to allow it to chroot into the new filesystem in order to change the root password.
+The script will ask for root permissions after downloading the packages to allow it to chroot into the new file system in order to change the root password.
 
 Note: if kernel modules and Open MPI are required, these should be built separately before the root file system.
 
@@ -44,7 +44,7 @@ Now create an SD card for the board.
 
 ### Set up an SD card
 
-Now we can create an SD card to contain the compiled boot image and root filesystem. Format an SD card with two partitions.
+Now we can create an SD card to contain the compiled boot image and root file system. Format an SD card with two partitions.
 
  * The first, a small FAT32 partition called `BOOT`. This is just to hold the bootloader, kernel, and a bitstream, so 30MB is plenty of space.
  * The rest of the card as an ext4 partition called `Linux`.
@@ -148,6 +148,38 @@ If the FSBL or U-Boot executables are changed, the boot image can be recreated u
 	./make.sh bootimage
 
 This will create `images/BOOT.bin`. Alternatively, a boot image can be created using Xilinx SDK.
+
+
+## Creating a root file system
+
+The make script can create a Debian-based root file system using [Multistrap](https://wiki.debian.org/Multistrap) by running:
+
+	./make.sh rootfs
+
+If the appropriate sources have been downloaded and built, this will also copy Open MPI, Linux kernel modules and the PHANTOM API libraries into the file system.
+
+Alternative file systems (such as a minimal Busybox-based system) can also be used, but are not currently built by these scripts.
+
+### File system customisation
+
+The basic contents of the file system can be customised by editing [`rootfs/multistrap.conf`](rootfs/multistrap.conf) before building. This file defines the packages included, as well as the Debian version to use (both Jessie and Stretch should work). The default configuration uses Debian Jessie, and includes a selection of useful packages for a fairly full-featured system.
+
+The [`rootfs/rootfs_setup.sh`](rootfs/rootfs_setup.sh) script is run to set-up the Multistrap system after packages have been downloaded. This file can be modified to customise this process.
+
+Additional files can be added to the root file system automatically by the make script by placing them in the [`rootfs/overlay/`](rootfs/overlay/) folder.
+
+### File system size
+
+The created Debian root file system is designed to be copied to an SD card and mounted as the system's main persistent storage, so can be quite large.
+
+The following are estimated sizes for the built file system, where 'complete' is the full default `multistrap.conf` and 'minimal' is only the base Debian packages required for booting:
+
+* Jessie (complete) - 388MB
+* Jessie (minimal) - 186MB
+* Stretch (complete) - 395MB
+* Stretch (minimal) - 169MB
+
+This includes around 13MB for Open MPI, kernel modules and the PHANTOM API on top of the Debian system.
 
 
 ## Supporting files for additional boards, etc.

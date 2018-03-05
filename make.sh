@@ -57,7 +57,7 @@ function copy_api {
 function build_multistrap {
 	cd rootfs
 	sudo multistrap -f multistrap.conf
-	sudo ./zynq_setup.sh
+	sudo ./rootfs_setup.sh
 	sudo cp -afv --no-preserve=ownership overlay/. rootfs/
 	sudo rm -f rootfs/README.md
 	cd ..
@@ -182,7 +182,7 @@ case "$1" in
 		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
 		cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
 
-		echo "Copying root filesystem (may ask for root)..."
+		echo "Copying root file system (may ask for root)..."
 		TARGETDIR=$SDCARD_ROOTFS
 		sudo cp -a rootfs/rootfs/* $TARGETDIR
 		sync
