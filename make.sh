@@ -50,12 +50,12 @@ function build_api {
 }
 
 function copy_api {
-	sudo cp -v phantom_api/libphantom.so rootfs/rootfs/usr/lib/
-	sudo cp -v phantom_api/*.h rootfs/rootfs/usr/include/
+	sudo cp -v phantom_api/libphantom.so multistrap/rootfs/usr/lib/
+	sudo cp -v phantom_api/*.h multistrap/rootfs/usr/include/
 }
 
 function build_multistrap {
-	cd rootfs
+	cd multistrap
 	sudo multistrap -f multistrap.conf
 	sudo ./rootfs_setup.sh
 	sudo cp -afv --no-preserve=ownership overlay/. rootfs/
@@ -82,8 +82,8 @@ function build_ompi {
 
 function copy_ompi {
 	echo "Copying Open MPI to rootfs..."
-	sudo rm -rf rootfs/rootfs/opt/openmpi
-	sudo cp -af --no-preserve=ownership ompi/build rootfs/rootfs/opt/openmpi
+	sudo rm -rf multistrap/rootfs/opt/openmpi
+	sudo cp -af --no-preserve=ownership ompi/build multistrap/rootfs/opt/openmpi
 }
 
 function check_sources {
@@ -155,7 +155,7 @@ case "$1" in
 		cd linux-xlnx
 		compile_environment
 		make modules
-		sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../rootfs/rootfs/
+		sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
 		cd ..
 	;;
 
@@ -184,7 +184,7 @@ case "$1" in
 
 		echo "Copying root file system (may ask for root)..."
 		TARGETDIR=$SDCARD_ROOTFS
-		sudo cp -a rootfs/rootfs/* $TARGETDIR
+		sudo cp -a multistrap/rootfs/* $TARGETDIR
 		sync
 
 		echo "Done."
@@ -222,8 +222,8 @@ case "$1" in
 	read -r -p "Are you sure? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 		then
-			sudo umount -lf rootfs/rootfs/dev
-			sudo rm -rf rootfs/rootfs
+			sudo umount -lf multistrap/rootfs/dev
+			sudo rm -rf multistrap/rootfs
 			rm -rf linux-xlnx u-boot-xlnx ompi
 			rm -rf images
 			rm -rf hwproj

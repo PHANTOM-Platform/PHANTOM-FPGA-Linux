@@ -162,17 +162,17 @@ Alternative file systems (such as a minimal Busybox-based system) can also be us
 
 ### File system customisation
 
-The basic contents of the file system can be customised by editing [`rootfs/multistrap.conf`](rootfs/multistrap.conf) before building. This file defines the packages included, as well as the Debian version to use (both Jessie and Stretch should work). The default configuration uses Debian Jessie, and includes a selection of useful packages for a fairly full-featured system.
+The basic contents of the file system can be customised by editing [`multistrap/multistrap.conf`](multistrap/multistrap.conf) before building. This file defines the packages included, as well as the Debian version to use (both Jessie and Stretch should work). The default configuration uses Debian Jessie, and includes a selection of useful packages for a fairly full-featured system.
 
-The [`rootfs/rootfs_setup.sh`](rootfs/rootfs_setup.sh) script is run to set-up the Multistrap system after packages have been downloaded. This file can be modified to customise this process.
+The [`multistrap/rootfs_setup.sh`](multistrap/rootfs_setup.sh) script is run to set-up the Multistrap system after packages have been downloaded. This file can be modified to customise this process.
 
-Additional files can be added to the root file system automatically by the make script by placing them in the [`rootfs/overlay/`](rootfs/overlay/) folder.
+Additional files can be added to the root file system automatically by the make script by placing them in the [`multistrap/overlay/`](multistrap/overlay/) folder.
 
 ### File system size
 
 The created Debian root file system is designed to be copied to an SD card and mounted as the system's main persistent storage, so can be quite large.
 
-The following are estimated sizes for the built file system, where 'complete' is the full default `multistrap.conf` and 'minimal' is only the base Debian packages required for booting:
+The following are estimated sizes for the built file system, where 'complete' is the full PHANTOM default `multistrap.conf` and 'minimal' is only the base Debian packages required for booting:
 
 * Jessie (complete) - 388MB
 * Jessie (minimal) - 186MB
