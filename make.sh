@@ -30,8 +30,8 @@ VIVADO_VERSION=2017.2
 OMPI_VERSION=3.0.0
 
 # The following are generated from the versions specified above, but can be customised if required.
-KERNEL_TAG=xilinx-v${VIVADO_VERSION}
-UBOOT_TAG=xilinx-v${VIVADO_VERSION}
+KERNEL_URL=https://github.com/Xilinx/linux-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
+UBOOT_URL=https://github.com/Xilinx/u-boot-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
 OMPI_URL=https://www.open-mpi.org/software/ompi/v${OMPI_VERSION%.*}/downloads/openmpi-${OMPI_VERSION}.tar.bz2
 
 
@@ -105,13 +105,33 @@ case "$1" in
 	;;
 
 	'sources' )
-		echo "Checking out sources..."
-		git clone --branch $KERNEL_TAG --depth 1 https://github.com/Xilinx/linux-xlnx.git
-		git clone --branch $UBOOT_TAG --depth 1 https://github.com/Xilinx/u-boot-xlnx.git
-		wget -O ompi.tar.bz2 $OMPI_URL
-		tar -xf ompi.tar.bz2
-		rm -f ompi.tar.bz2
-		mv openmpi-${OMPI_VERSION} ompi
+		echo "Fetching sources..."
+
+		if [ ! -d "linux-xlnx" ]; then
+			echo "Fetching Xilinx Linux kernel (${VIVADO_VERSION})..."
+			wget -O linux-xlnx.tar.gz $KERNEL_URL
+			tar -xzf linux-xlnx.tar.gz
+			rm -f linux-xlnx.tar.gz
+			mv linux-xlnx-xilinx-v${VIVADO_VERSION} linux-xlnx
+		fi
+
+		if [ ! -d "u-boot-xlnx" ]; then
+			echo "Fetching Xilinx U-Boot (${VIVADO_VERSION})..."
+			wget -O u-boot-xlnx.tar.gz $UBOOT_URL
+			tar -xzf u-boot-xlnx.tar.gz
+			rm -f u-boot-xlnx.tar.gz
+			mv u-boot-xlnx-xilinx-v${VIVADO_VERSION} u-boot-xlnx
+		fi
+
+		if [ ! -d "ompi" ]; then
+			echo "Fetching Open MPI (${OMPI_VERSION})..."
+			wget -O ompi.tar.bz2 $OMPI_URL
+			tar -xf ompi.tar.bz2
+			rm -f ompi.tar.bz2
+			mv openmpi-${OMPI_VERSION} ompi
+		fi
+
+		echo "Done."
 	;;
 
 	'kernel' )
