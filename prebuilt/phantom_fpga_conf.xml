@@ -10,7 +10,7 @@
 <component_inst>
 <name>phantom_0</name>
 <id>1000</id>
-<ipname>phantom_dummy_4</ipname>
+<ipname>phantom_dummy_2</ipname>
 <num_masters>1</num_masters>
 <slave_addr_base_0>0x40000000</slave_addr_base_0>
 <slave_addr_range_0>0x1000</slave_addr_range_0>

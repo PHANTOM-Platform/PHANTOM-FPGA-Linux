@@ -16,6 +16,12 @@ UBOOT_TARGET=zynq_zc706
 # Common examples are: xilinx.com:zc706:part0:1.3 digilentinc.com:zedboard:part0:1.0 digilentinc.com:zybo:part0:1.0
 BOARD_PART=xilinx.com:zc706:part0:1.3
 
+# The root file system type to generate.
+# Options are:
+#   'multistrap' -- a full Debian-based system, to be installed to the second SD card partition
+#   'buildroot' -- a minimal BusyBox-based system, to be run as a RAM disk
+ROOTFS=buildroot
+
 # These are the boot and rootfs partitions of your target SD card
 # Set up the SD card with two partitions:
 #   The first, called BOOT, a small FAT32 partition of 30MB
@@ -24,15 +30,17 @@ BOARD_PART=xilinx.com:zc706:part0:1.3
 SDCARD_BOOT=/media/$USER/BOOT/
 SDCARD_ROOTFS=/media/$USER/Linux/
 
-# The version of the Xilinx Linux kernel, U-Boot and Open MPI to use.
+# The version of the Xilinx Linux kernel, U-Boot, Open MPI and Buildroot to use.
 # It is recommended to change the Vivado version to that used for building the hardware.
 VIVADO_VERSION=2017.2
 OMPI_VERSION=3.0.0
+BUILDROOT_VERSION=2018.02
 
 # The following are generated from the versions specified above, but can be customised if required.
 KERNEL_URL=https://github.com/Xilinx/linux-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
 UBOOT_URL=https://github.com/Xilinx/u-boot-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
 OMPI_URL=https://www.open-mpi.org/software/ompi/v${OMPI_VERSION%.*}/downloads/openmpi-${OMPI_VERSION}.tar.bz2
+BUILDROOT_URL=https://buildroot.org/downloads/buildroot-${BUILDROOT_VERSION}.tar.bz2
 
 
 function compile_environment {
@@ -43,6 +51,14 @@ function compile_environment {
 	export LD_LIBRARY_PATH=
 }
 
+function clear_compile_environment {
+	unset ARCH
+	unset UIMAGE_LOADADDR
+	unset LOADADDR
+	unset CROSS_COMPILE
+	unset LD_LIBRARY_PATH
+}
+
 function build_api {
 	cd phantom_api
 	make DEFINES="-DSD_CARD_PHANTOM_LOC=\\\"/boot/\\\" -DTARGET_BOARD=\\\"$BOARD_PART\\\" -DTARGET_FPGA=0"
@@ -50,8 +66,16 @@ function build_api {
 }
 
 function copy_api {
-	sudo cp -v phantom_api/libphantom.so multistrap/rootfs/usr/lib/
-	sudo cp -v phantom_api/*.h multistrap/rootfs/usr/include/
+	check_rootfs_valid
+	if [ "$ROOTFS" == "multistrap" ]; then
+		sudo cp -v phantom_api/libphantom.so multistrap/rootfs/usr/lib/
+		sudo cp -v phantom_api/*.h multistrap/rootfs/usr/include/
+	elif [ "$ROOTFS" == "buildroot" ]; then
+		mkdir -p buildroot-phantom/board/phantom_zynq/overlay/usr/lib
+		mkdir -p buildroot-phantom/board/phantom_zynq/overlay/usr/include
+		cp -v phantom_api/libphantom.so buildroot-phantom/board/phantom_zynq/overlay/usr/lib/
+		cp -v phantom_api/*.h buildroot-phantom/board/phantom_zynq/overlay/usr/include/
+	fi
 }
 
 function build_multistrap {
@@ -81,17 +105,32 @@ function build_ompi {
 }
 
 function copy_ompi {
+	check_rootfs_valid
 	echo "Copying Open MPI to rootfs..."
-	sudo rm -rf multistrap/rootfs/opt/openmpi
-	sudo cp -af --no-preserve=ownership ompi/build multistrap/rootfs/opt/openmpi
+
+	if [ "$ROOTFS" == "multistrap" ]; then
+		sudo rm -rf multistrap/rootfs/opt/openmpi
+		sudo cp -af --no-preserve=ownership ompi/build multistrap/rootfs/opt/openmpi
+	elif [ "$ROOTFS" == "buildroot" ]; then
+		rm -rf buildroot-phantom/board/phantom_zynq/overlay/opt/openmpi
+		mkdir -p buildroot-phantom/board/phantom_zynq/overlay/opt
+		cp -af ompi/build buildroot-phantom/board/phantom_zynq/overlay/opt/openmpi
+	fi
 }
 
 function check_sources {
 	if [ ! "$1" == "sources" ]; then
-		if [ ! -d "linux-xlnx" ] || [ ! -d "u-boot-xlnx" ] || [ ! -d "ompi" ]; then
-			echo "Run '$0 sources' first to grab the kernel, U-Boot and Open MPI sources."
+		if [ ! -d "linux-xlnx" ] || [ ! -d "u-boot-xlnx" ] || [ ! -d "ompi" ] || ([ "$ROOTFS" == "buildroot" ] && [ ! -d "buildroot" ]); then
+			echo "Run '$0 sources' first to grab the kernel, U-Boot, Open MPI and (optionally) Buildroot sources."
 			exit
 		fi
+	fi
+}
+
+function check_rootfs_valid {
+	if [ ! "$ROOTFS" == "multistrap" ] && [ ! "$ROOTFS" == "buildroot" ]; then
+		echo "Invalid rootfs type, $ROOTFS"
+		exit
 	fi
 }
 
@@ -131,6 +170,14 @@ case "$1" in
 			mv openmpi-${OMPI_VERSION} ompi
 		fi
 
+		if [ ! -d "buildroot" ]; then
+			echo "Fetching Buildroot (${BUILDROOT_VERSION})..."
+			wget -O buildroot.tar.bz2 $BUILDROOT_URL
+			tar -xf buildroot.tar.bz2
+			rm -f buildroot.tar.bz2
+			mv buildroot-${BUILDROOT_VERSION} buildroot
+		fi
+
 		echo "Done."
 	;;
 
@@ -141,7 +188,7 @@ case "$1" in
 		compile_environment
 		make xilinx_zynq_defconfig
 		cat ../custom/kernel_config >> .config
-		make uImage
+		make uImage modules
 		cp arch/arm/boot/uImage ../images/
 		cd ..
 
@@ -165,18 +212,33 @@ case "$1" in
 	;;
 
 	'rootfs' )
-		build_multistrap
-		build_api
-		copy_api
-		copy_ompi
-
-		echo "Building and installing kernel modules..."
-		check_sources
-		cd linux-xlnx
-		compile_environment
-		make modules
-		sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
-		cd ..
+		check_rootfs_valid
+		if [ "$ROOTFS" == "multistrap" ]; then
+			build_multistrap
+			build_api
+			copy_api
+			copy_ompi
+			echo "Installing kernel modules..."
+			check_sources
+			cd linux-xlnx
+			sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
+			cd ..
+		elif [ "$ROOTFS" == "buildroot" ]; then
+			build_api
+			copy_api
+			copy_ompi
+			echo "Installing kernel modules..."
+			cd linux-xlnx
+			make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../buildroot-phantom/board/phantom_zynq/overlay/
+			cd ..
+			echo "Running Buildroot to generate rootfs..."
+			cd buildroot
+			make BR2_EXTERNAL=../buildroot-phantom phantom_zynq_defconfig
+			make
+			mkdir -p ../images
+			cp -fv output/images/rootfs.cpio.uboot ../images/
+			cd ..
+		fi
 	;;
 
 	'api' )
@@ -190,11 +252,12 @@ case "$1" in
 	;;
 
 	'sdcard' )
+		check_rootfs_valid
+
 		echo "Setting up boot partition..."
 		cp images/BOOT.bin $SDCARD_BOOT
 		cp images/devicetree.dtb $SDCARD_BOOT
 		cp images/uImage $SDCARD_BOOT
-		cp arch/uEnv.txt $SDCARD_BOOT
 
 		mkdir -p $SDCARD_BOOT/fpga/conf
 		mkdir -p $SDCARD_BOOT/fpga/bitfile
@@ -202,9 +265,15 @@ case "$1" in
 		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
 		cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
 
-		echo "Copying root file system (may ask for root)..."
-		TARGETDIR=$SDCARD_ROOTFS
-		sudo cp -a multistrap/rootfs/* $TARGETDIR
+		if [ "$ROOTFS" == "multistrap" ]; then
+			cp arch/uEnv-multistrap.txt $SDCARD_BOOT/uEnv.txt
+			echo "Copying root file system (may ask for root)..."
+			sudo cp -a multistrap/rootfs/* $SDCARD_ROOTFS
+		elif [ "$ROOTFS" == "buildroot" ]; then
+			cp arch/uEnv-buildroot.txt $SDCARD_BOOT/uEnv.txt
+			cp images/rootfs.cpio.uboot $SDCARD_BOOT
+		fi
+		
 		sync
 
 		echo "Done."
@@ -244,7 +313,7 @@ case "$1" in
 		then
 			sudo umount -lf multistrap/rootfs/dev
 			sudo rm -rf multistrap/rootfs
-			rm -rf linux-xlnx u-boot-xlnx ompi
+			rm -rf linux-xlnx u-boot-xlnx ompi buildroot
 			rm -rf images
 			rm -rf hwproj
 			rm -rf fsbl

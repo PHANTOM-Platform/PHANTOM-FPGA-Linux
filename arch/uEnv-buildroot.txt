@@ -1,0 +1,5 @@
+bitfileexists=test -e mmc 0 /bitstream.bit
+fpgaload=if run bitfileexists; then load mmc 0 0x1000000 bitstream.bit; fpga loadb 0 0x1000000 ${filesize}; fi
+bootargs=console=ttyPS0,115200 uio_pdrv_genirq.of_id=phantom_platform,generic-uio,ui_pdrv
+ramdisk_image=rootfs.cpio.uboot
+uenvcmd=run fpgaload; load mmc 0 ${kernel_load_address} ${kernel_image} && load mmc 0 ${devicetree_load_address} ${devicetree_image} && load mmc 0 ${ramdisk_load_address} ${ramdisk_image} && bootm ${kernel_load_address} ${ramdisk_load_address} ${devicetree_load_address}
