@@ -11,6 +11,11 @@ BR2_TARGET_UBOOT=n
 BR2_LINUX_KERNEL=n
 
 #
+# Enable eudev for setting up PHANTOM UIO devices
+#
+BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_EUDEV=y
+
+#
 # Use an external (e.g. Xilinx) toolchain, instead of generating one
 #
 BR2_TOOLCHAIN_EXTERNAL=y
@@ -46,3 +51,8 @@ BR2_PACKAGE_OPENSSH=y
 #
 BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_PHANTOM_PATH)/board/phantom_zynq/overlay/"
 BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_PHANTOM_PATH)/board/phantom_zynq/post-build.sh"
+
+#
+# Create PHANTOM component user accounts
+#
+BR2_ROOTFS_USERS_TABLES="$(BR2_EXTERNAL_PHANTOM_PATH)/board/phantom_zynq/users_table.txt"

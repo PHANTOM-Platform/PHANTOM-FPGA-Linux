@@ -195,7 +195,7 @@ The following are estimated sizes for the built file system, where 'complete' is
 
 This includes around 13MB for Open MPI, kernel modules and the PHANTOM API on top of the Debian system.
 
-The compressed image of the BusyBox file system is around 8MB by default (with Open MPI, kernel modules and PHANTOM API included).
+The compressed image of the BusyBox file system is around 10MB by default (with Open MPI, kernel modules and PHANTOM API included).
 
 
 ## Supporting files for additional boards, etc.

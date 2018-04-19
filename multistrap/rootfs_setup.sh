@@ -46,6 +46,12 @@ chroot $TARGET_ROOTFS_DIR dpkg --configure -a
 # Fix some ownership issues
 chroot $TARGET_ROOTFS_DIR chown root:root -R /bin /usr/bin /sbin /usr/sbin
 
+for i in `seq 0 31`;
+do
+  echo Creating user \'phantom$i\'
+  chroot $TARGET_ROOTFS_DIR adduser --quiet --disabled-login --shell /bin/false --gecos "" phantom$i
+done
+
 # Set root password (loop until set correctly)
 echo "******************************************"
 echo "Enter password for the new root user:"
