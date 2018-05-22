@@ -33,6 +33,10 @@ if {[llength $argv] < 3} {
 	}
 }
 
+if {[llength $ips] > 16} {
+	error "Maximum number of IP cores exceeded ([llength $ips] greater than 16)"
+}
+
 puts "Creating PHANTOM project $proj_path/$proj_name"
 puts "Target board $brd_part"
 puts "IPs to include:"
@@ -73,16 +77,24 @@ puts $fp "<design_bitfile>bitfile.bit</design_bitfile>"
 
 # Add the Zynq IP
 puts "Adding fixed IP cores"
-create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0
-apply_bd_automation -rule xilinx.com:bd_rule:processing_system7 -config {make_external "FIXED_IO, DDR" apply_board_preset "1" Master "Disable" Slave "Disable" }  [get_bd_cells processing_system7_0]
+set zynq_ps7 [create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7 processing_system7_0]
+apply_bd_automation -rule xilinx.com:bd_rule:processing_system7 -config {make_external "FIXED_IO, DDR" apply_board_preset "1" Master "Disable" Slave "Disable" } $zynq_ps7
 
 set current_hp_port 0
 set current_num 0
+set mastermode 1
+
+# Get the size of DDR from the Processing System parameters
+set ddrsize [expr [get_property "CONFIG.PCW_DDR_RAM_HIGHADDR" $zynq_ps7] + 1]
+
+# Allow 4MiB per component on master interface
+set memsize 0x400000
+set membase [expr $ddrsize - $memsize]
 
 foreach ipname $ips {
 	puts "Processing IP $ipname"
 
-	set ip [get_ipdefs -quiet -name $ipname*]
+	set ip [get_ipdefs -quiet *$ipname*]
 	set num_found [llength $ip]
 
 	if { $num_found == 0 } {
@@ -95,34 +107,40 @@ foreach ipname $ips {
 	# Add the PHANTOM core
 	set core_name phantom_$current_num
 	create_bd_cell -type ip -vlnv $ip $core_name
-
+	
 	# Connect slaves
-	set slave [get_bd_intf_pins $core_name/S*_AXI]
+	set slave [get_bd_intf_pins -filter {MODE == Slave} $core_name/*]
 	if { [llength $slave] != 1 } {
 		error "Specified IP $ipname must have exactly one AXI slave connection."
 	}
-	apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Master "/processing_system7_0/M_AXI_GP0" Clk "Auto" }  $slave
+	apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$zynq_ps7/M_AXI_GP0\" Clk \"Auto\""  $slave
 
 	# Connect masters
 	# The block automation rule is different depending on whether we are creating a new connection, or sharing an existing one:
 	#	This creates a new connection:
-	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"/phantom_dummy_4_0/M01_AXI\" Clk \"Auto\""  [get_bd_intf_pins processing_system7_0/S_AXI_HP3]
+	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"/phantom_dummy_4_0/M01_AXI\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\""  [get_bd_intf_pins processing_system7_0/S_AXI_HP3]
 	#	This shares an existing one:
 	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Slave "/processing_system7_0/S_AXI_HP0" Clk "Auto" }  [get_bd_intf_pins phantom_dummy_4_0/M02_AXI]
-	set mastermode 1
-	foreach master [get_bd_intf_pins $core_name/M*_AXI] {
+	foreach master [get_bd_intf_pins -filter {MODE == Master} $core_name/*] {
 
 		# Enable HP connections
 		if { $mastermode } {
-			set_property -dict [list CONFIG.PCW_USE_S_AXI_HP${current_hp_port} {1}] [get_bd_cells processing_system7_0]
+			set_property -dict [list CONFIG.PCW_USE_S_AXI_HP${current_hp_port} {1}] $zynq_ps7
 		}
 
-		set slaveport [get_bd_intf_pins processing_system7_0/S_AXI_HP$current_hp_port]
+		set slaveport [get_bd_intf_pins $zynq_ps7/S_AXI_HP$current_hp_port]
 		puts "Connecting $master to $slaveport"
 		if { $mastermode } {
-			apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$master\" Clk \"Auto\"" $slaveport
+			apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$master\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\"" $slaveport
 		} else {
 			apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Slave \"$slaveport\" Clk \"Auto\"" $master
+		}
+
+		# Set allocated memory range for this component's master interfaces
+		foreach addr_space [get_bd_addr_spaces -of_objects $master] {
+			puts "Mapping $master to address 0x[format %X $membase]"
+			set_property range $memsize [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
+			set_property offset $membase [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
 		}
 
 		# Round robin connect to the HP ports
@@ -139,8 +157,10 @@ foreach ipname $ips {
 	#	Component 1 : 0x4100_0000
 	#	Component 2 : 0x4200_0000
 	# 	etc...
-	set_property offset 0x4${current_num}000000 [get_bd_addr_segs "processing_system7_0/Data/SEG_phantom_${current_num}_S00_AXI_reg"]
-	set_property range 16M [get_bd_addr_segs "processing_system7_0/Data/SEG_phantom_${current_num}_S00_AXI_reg"]
+	set offset [expr 0x40000000 + $current_num * 0x1000000]
+	puts "Mapping $core_name slave to address 0x[format %X $offset]"
+	set_property offset $offset [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
+	set_property range 16M [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
 
 	# Output details to XML
 	puts $fp "<component_inst>"
@@ -148,22 +168,28 @@ foreach ipname $ips {
 	puts $fp "<id>[expr $current_num + 1000]</id>"
 	puts $fp "<ipname>$ipname</ipname>"
 	puts $fp "<num_masters>[llength $master]</num_masters>"
-	puts $fp "<slave_addr_base_0>0x40000000</slave_addr_base_0>"
-    puts $fp "<slave_addr_range_0>0x1000</slave_addr_range_0>"
+	puts $fp "<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
+	puts $fp "<master_addr_range_0>$memsize</master_addr_range_0>"
+	puts $fp "<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
+	puts $fp "<slave_addr_range_0>0x1000000</slave_addr_range_0>"
 	puts $fp "</component_inst>"
 
 	set current_num [expr $current_num + 1]
+	set membase [expr $membase - $memsize]
 }
+
+# Validate the design - this might produce some warnings (some can be ignored)
+validate_bd_design
+
+# Regenerate the diagram layout and save up
+regenerate_bd_layout
+save_bd_design
 
 # Add the HDL wrapper
 make_wrapper -files [get_files $proj_path/$proj_name/$proj_name.srcs/sources_1/bd/design_1/design_1.bd] -top
 add_files -norecurse $proj_path/$proj_name/$proj_name.srcs/sources_1/bd/design_1/hdl/design_1_wrapper.v
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
-
-# Regenerate the diagram and save up
-regenerate_bd_layout
-save_bd_design
 
 # Close and save the XML
 puts $fp "</phantom_fpga>"
