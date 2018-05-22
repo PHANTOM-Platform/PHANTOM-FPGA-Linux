@@ -32,7 +32,7 @@ SDCARD_ROOTFS=/media/$USER/Linux/
 
 # The version of the Xilinx Linux kernel, U-Boot, Open MPI and Buildroot to use.
 # It is recommended to change the Vivado version to that used for building the hardware.
-VIVADO_VERSION=2017.2
+VIVADO_VERSION=2017.4
 OMPI_VERSION=3.0.0
 BUILDROOT_VERSION=2018.02
 
