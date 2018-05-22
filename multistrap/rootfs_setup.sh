@@ -46,7 +46,7 @@ chroot $TARGET_ROOTFS_DIR dpkg --configure -a
 # Fix some ownership issues
 chroot $TARGET_ROOTFS_DIR chown root:root -R /bin /usr/bin /sbin /usr/sbin
 
-for i in `seq 0 31`;
+for i in `seq 0 15`;
 do
   echo Creating user \'phantom$i\'
   chroot $TARGET_ROOTFS_DIR adduser --quiet --disabled-login --shell /bin/false --gecos "" phantom$i
