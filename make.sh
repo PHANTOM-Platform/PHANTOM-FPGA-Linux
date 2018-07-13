@@ -200,13 +200,13 @@ case "$1" in
 
 	'rootfs' )
 		check_rootfs_valid
+		check_sources
 		if [ "$ROOTFS" == "multistrap" ]; then
 			build_multistrap
 			build_api
 			copy_api
 			copy_ompi
 			echo "Installing kernel modules..."
-			check_sources
 			cd linux-xlnx
 			sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
 			cd ..
