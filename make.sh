@@ -49,8 +49,6 @@ function clear_compile_environment {
 function build_api {
 	cd phantom_api
 	make DEFINES="-DSD_CARD_PHANTOM_LOC=\\\"/boot/\\\" -DTARGET_BOARD=\\\"$BOARD_PART\\\" -DTARGET_FPGA=0"
-	cp libphantom.so ../rootfs/rootfs/usr/lib/
-	cp *.h ../rootfs/rootfs/usr/include/
 	cd ..
 }
 
