@@ -1,0 +1,92 @@
+<!-- Real time threads isolation scenario - Deployment -->
+<deployment name="Initial_Deployment" xmlns="DE" xsi:schemaLocation="../models/deployment.xsd">
+
+	<!--Component Deployment-->
+
+	<mapping name="map1" type="processing" persistency="full">
+		<component name="comp1" />
+		<processor name="core1" />
+		<fpga name="zc706_logic" ipname="phantom_dummy_2"/>
+
+		<scheduling_param name="priority" value="1"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map2" type="processing"  persistency="none">
+		<component name="comp2" />
+		<processor name="core1" />
+		<fpga name="zc706_logic" ipname="phantom_dummy_4"/>
+
+		<scheduling_param name="priority" value="2"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map3" type="processing" persistency="none">
+		<component name="comp3" />
+		<processor name="core1" />
+
+		<scheduling_param name="priority" value="3"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map4" type="processing" persistency="none">
+		<component name="comp4" />
+		<processor name="core1" />
+
+		<scheduling_param name="priority" value="4"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map5" type="processing" persistency="none">
+		<component name="comp5" />
+		<processor name="core1" />
+
+		<scheduling_param name="priority" value="5"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map6" type="processing" persistency="none">
+		<component name="comp6" />
+		<processor name="core1" />
+
+		<scheduling_param name="priority" value="6"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map7" type="processing"  persistency="none">
+		<component name="comp7" />
+		<processor name="core1" />
+
+		<scheduling_param name="priority" value="7"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<mapping name="map8" type="processing" persistency="none">
+		<component name="comp8" />
+		<processor name="core1" />
+
+		<scheduling_param name="priority" value="8"></scheduling_param>
+        <scheduling_param name="period" value="500"></scheduling_param>
+	</mapping >
+
+	<!--Communication Deployment-->
+
+	<mapping name="map9" type="communication" persistency="none">
+		<component name="comp9" />
+		<memory name="MEM1"/>
+		<comm_protocol name="posix_thread_mutex" />
+	</mapping >
+
+	<mapping name="map10" type="communication" persistency="none">
+		<component name="comp10" />
+		<memory name="MEM1"/>
+		<comm_protocol name="posix_thread" />
+	</mapping >
+
+	<mapping name="map11" type="communication"  persistency="none">
+		<component name="comp11" />
+		<memory name="MEM1"/>
+		<comm_protocol name="posix_thread" />
+	</mapping >
+
+</deployment>
