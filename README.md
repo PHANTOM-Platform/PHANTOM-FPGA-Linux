@@ -31,7 +31,7 @@ First, copy the included pre-built kernel and boot images to be used on the boar
 	./make.sh prebuilt
 
 The pre-built images include a BusyBox-based root file system.
-If using the Debian-based root file system, set `ROOTFS` to `multistrap` at the top of `make.sh` and generate with:
+If using the Debian-based root file system, set `ROOTFS` to `multistrap` at in `boardsupport.sh` and generate with:
 
 	./make.sh rootfs
 
