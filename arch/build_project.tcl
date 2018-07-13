@@ -167,7 +167,11 @@ foreach ipname $ips {
 	puts $fp "<name>$core_name</name>"
 	puts $fp "<id>[expr $current_num + 1000]</id>"
 	puts $fp "<ipname>$ipname</ipname>"
-	puts $fp "<num_masters>[llength $master]</num_masters>"
+	if {[info exists master]} {
+		puts $fp "<num_masters>[llength $master]</num_masters>"
+	} else {
+		puts $fp "<num_masters>0</num_masters>"
+	}
 	puts $fp "<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
 	puts $fp "<master_addr_range_0>$memsize</master_addr_range_0>"
 	puts $fp "<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
