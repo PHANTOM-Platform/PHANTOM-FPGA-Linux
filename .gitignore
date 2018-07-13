@@ -9,6 +9,7 @@ buildroot-phantom/board/phantom_zynq/overlay/usr/include/phantom_api_lowlevel.h
 buildroot-phantom/board/phantom_zynq/overlay/usr/include/phantom_xml_parser.h
 buildroot-phantom/board/phantom_zynq/overlay/usr/lib/libphantom.so
 multistrap/rootfs/
+rootfs/
 hwproj/
 fsbl/
 images/
