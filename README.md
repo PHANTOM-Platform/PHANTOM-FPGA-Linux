@@ -22,7 +22,9 @@ On Debian or Ubuntu-based distributions you can simply do the following:
 
 ## Quick Start
 
-If you are using the ZC706 and so are happy to use the pre-built kernel, you can simply do the following.
+Before using the script you must tell the tools which target FPGA board you are using by setting the `$TARGET` environment variable. The full list of supported boards is in `boardsupport.sh` but examples are `zc706`, `zybo`, and `zedboard`.
+
+	export TARGET=zc706
 
 First, copy the included pre-built kernel and boot images to be used on the board:
 

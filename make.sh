@@ -1,46 +1,33 @@
 #!/bin/bash
-
-# These variables must be set correctly for your target board
-
-# This is the devicetree file to use from the Linux kernel source tree.
-# Xilinx provides these for all of its boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders.
-# Common examples are: zynq-zc706.dtb zynq-zed.dtb zynq-zybo.dtb
-DEVICETREE=zynq-zc706.dtb
-
-# The target to use for U-Boot, these are in the `u-boot-xlnx/configs` directory.
-# Common examples are: zynq_zc706 zynq_zed zynq_zybo
-UBOOT_TARGET=zynq_zc706
-
-# The Xilinx name for the target board.
-# You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
-# Common examples are: xilinx.com:zc706:part0:1.3 digilentinc.com:zedboard:part0:1.0 digilentinc.com:zybo:part0:1.0
-BOARD_PART=xilinx.com:zc706:part0:1.3
-
-# The root file system type to generate.
-# Options are:
-#   'multistrap' -- a full Debian-based system, to be installed to the second SD card partition
-#   'buildroot' -- a minimal BusyBox-based system, to be run as a RAM disk
-ROOTFS=buildroot
-
-# These are the boot and rootfs partitions of your target SD card
+#
+# This is the main build script for the PHANTOM FPGA Linux platform.
+#
+# Before running, ensure that the $TARGET environment variable is set to a
+# target board (as listed in boardsupport.sh)
+#
+# Also, if your SD card partitions are mounted at non-standard locations set
+# $SDCARD_BOOT and $SDCARD_ROOTFS
 # Set up the SD card with two partitions:
 #   The first, called BOOT, a small FAT32 partition of 30MB
 #   The rest, called Linux, as ext4
-# An Ubuntu-based system will automount such a card at the following locations
-SDCARD_BOOT=/media/$USER/BOOT/
-SDCARD_ROOTFS=/media/$USER/Linux/
+# An Ubuntu-based system will automount such a card at the default locations below:
+if [[ -z "${SDCARD_BOOT}" ]]; then
+	SDCARD_BOOT=/media/$USER/BOOT/
+fi
+if [[ -z "${SDCARD_ROOTFS}" ]]; then
+	SDCARD_ROOTFS=/media/$USER/Linux/
+fi
 
-# The version of the Xilinx Linux kernel, U-Boot, Open MPI and Buildroot to use.
-# It is recommended to change the Vivado version to that used for building the hardware.
-VIVADO_VERSION=2017.4
-OMPI_VERSION=3.0.0
-BUILDROOT_VERSION=2018.02
 
-# The following are generated from the versions specified above, but can be customised if required.
-KERNEL_URL=https://github.com/Xilinx/linux-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
-UBOOT_URL=https://github.com/Xilinx/u-boot-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
-OMPI_URL=https://www.open-mpi.org/software/ompi/v${OMPI_VERSION%.*}/downloads/openmpi-${OMPI_VERSION}.tar.bz2
-BUILDROOT_URL=https://buildroot.org/downloads/buildroot-${BUILDROOT_VERSION}.tar.bz2
+# boadsupport.sh sets variables based on the target board
+if [[ -z "${TARGET}" ]]; then
+	echo "The environment variable TARGET is not set."
+	echo "Set it to the desired target board, as listed in boardsupport.sh"
+	exit 1
+fi
+. ./boardsupport.sh $TARGET
+
+
 
 
 function compile_environment {
@@ -62,6 +49,8 @@ function clear_compile_environment {
 function build_api {
 	cd phantom_api
 	make DEFINES="-DSD_CARD_PHANTOM_LOC=\\\"/boot/\\\" -DTARGET_BOARD=\\\"$BOARD_PART\\\" -DTARGET_FPGA=0"
+	cp libphantom.so ../rootfs/rootfs/usr/lib/
+	cp *.h ../rootfs/rootfs/usr/include/
 	cd ..
 }
 
@@ -251,6 +240,13 @@ case "$1" in
 		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `pwd`/../ $BOARD_PART ${@:2}
 	;;
 
+	'hwxml' )
+		xml=`realpath $2`
+		echo "Building Vivado project from deployment $2..."
+		cd arch
+		python3 archbuild.py `pwd`/../hwproj $xml $BOARD_PART
+	;;
+
 	'sdcard' )
 		check_rootfs_valid
 
@@ -322,7 +318,7 @@ case "$1" in
 
 	* )
 		echo "Unknown option: '$1'"
-		echo "Usage: $0 [prebuilt|sources|kernel|uboot|ompi|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean]"
+		echo "Usage: $0 [prebuilt|sources|kernel|uboot|ompi|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean|hwxml]"
 	;;
 
 esac
