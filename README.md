@@ -39,6 +39,8 @@ The script will ask for root permissions after downloading the packages to allow
 
 _Note: if kernel modules and Open MPI are required in the Debian-based file system, these should be built separately beforehand so they can be copied in._
 
+_Note: if you get unusual errors whilst compiliing, (such as that the compiler is not C and C++ link compatible) ensure that you have sourced Xilinx's setup scripts and that you are therefore compiling using their toolchain._
+
 Now ensure your PHANTOM-compatible IP cores (see later) are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
 
 	./make.sh hwproject ipcore1 ipcore2
