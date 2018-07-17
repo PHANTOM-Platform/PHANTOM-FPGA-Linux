@@ -15,6 +15,7 @@ fsbl/
 images/
 *.DS_Store
 *~
+.vscode
 
 # Vivado outputs a large amount of files to the current directory we need to ignore
 vivado.log
