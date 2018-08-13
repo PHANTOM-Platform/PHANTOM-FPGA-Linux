@@ -189,7 +189,7 @@ case "$1" in
 		compile_environment
 		make ${UBOOT_TARGET}_defconfig
 		make
- 		cp u-boot ../images/u-boot.elf
+		cp u-boot ../images/u-boot.elf
 	;;
 
 	'ompi' )

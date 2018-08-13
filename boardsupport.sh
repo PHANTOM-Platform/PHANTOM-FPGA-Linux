@@ -17,11 +17,11 @@
 # Common examples are: xilinx.com:zc706:part0:1.3 digilentinc.com:zedboard:part0:1.0 digilentinc.com:zybo:part0:1.0
 
 case "$1" in
-    'zc706' )
+	'zc706' )
 		DEVICETREE=zynq-zc706.dtb
 		UBOOT_TARGET=zynq_zc706
 		BOARD_PART=xilinx.com:zc706:part0:1.3
-    ;;
+	;;
 
 	'zybo' )
 		DEVICETREE=zynq-zybo.dtb
@@ -29,16 +29,22 @@ case "$1" in
 		BOARD_PART=digilentinc.com:zybo:part0:1.0
 	;;
 
-    'zedboard' )
+	'zedboard' )
 		DEVICETREE=zynq-zed.dtb
 		UBOOT_TARGET=zynq_zed
 		BOARD_PART=digilentinc.com:zedboard:part0:1.0
-    ;;
+	;;
 
-    * )
+	'z-turn_7020' )
+		DEVICETREE=zynq-zturn.dtb
+		UBOOT_TARGET=zynq_zturn
+		BOARD_PART=myirtech.com:z-turn_7020:part0:1.0
+	;;
+
+	* )
 		echo "Unsupported board type: $1"
 		return 1
-    ;;
+	;;
 esac
 
 
