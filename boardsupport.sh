@@ -56,9 +56,9 @@ ROOTFS=buildroot
 
 # The version of the Xilinx Linux kernel, U-Boot, Open MPI and Buildroot to use.
 # It is recommended to change the Vivado version to that used for building the hardware.
-VIVADO_VERSION=2017.4
+VIVADO_VERSION=2018.2
 OMPI_VERSION=3.0.0
-BUILDROOT_VERSION=2018.02
+BUILDROOT_VERSION=2018.08.2
 
 # The following are generated from the versions specified above, but can be customised if required.
 KERNEL_URL=https://github.com/Xilinx/linux-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
