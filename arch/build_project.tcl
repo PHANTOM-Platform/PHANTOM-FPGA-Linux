@@ -151,7 +151,7 @@ foreach ipname $ips {
 		}
 	}
 
-	# Set the address mappings
+	# Set the slave interface address mapping
 	# The API is set to assume the addresses of the PHANTOM cores are:
 	#	Component 0 : 0x4000_0000
 	#	Component 1 : 0x4100_0000
@@ -161,6 +161,16 @@ foreach ipname $ips {
 	puts "Mapping $core_name slave to address 0x[format %X $offset]"
 	set_property offset $offset [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
 	set_property range 16M [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
+
+	# Print the core's address mapping
+	puts ""
+	puts "****************************************"
+	puts "* Address Map for '$core_name':"
+	puts "* -------------------------------------"
+	puts "*  Slave at 0x[format %X $offset], size 0x1000000"
+	puts "* Master at 0x[format %X $membase], size 0x[format %X $memsize]"
+	puts "*****************************************"
+	puts ""
 
 	# Output details to XML
 	puts $fp "<component_inst>"
