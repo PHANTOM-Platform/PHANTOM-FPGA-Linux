@@ -212,6 +212,7 @@ See the [support README file](support/README.md) for more information.
 ## Running a full build from sources
 
 The following series of make script commands will run a typical full build and install of all components from sources.
+This is equivalent to `./make.sh all`.
 
 The variables at the top of the make script should be set before starting the build process, and the SD card partitioned and mounted ready for use.
 

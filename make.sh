@@ -159,6 +159,60 @@ function fetch_sources {
 	echo "Done."
 }
 
+function create_rootfs {
+	if [ "$ROOTFS" == "multistrap" ]; then
+			build_multistrap
+			build_api
+			copy_api
+			copy_ompi
+			echo "Installing kernel modules..."
+			cd linux-xlnx
+			sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
+			cd ..
+		elif [ "$ROOTFS" == "buildroot" ]; then
+			build_api
+			copy_api
+			copy_ompi
+			echo "Installing kernel modules..."
+			cd linux-xlnx
+			make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../buildroot-phantom/board/phantom_zynq/overlay/
+			cd ..
+			echo "Running Buildroot to generate rootfs..."
+			cd buildroot
+			make BR2_EXTERNAL=../buildroot-phantom phantom_zynq_defconfig
+			make
+			mkdir -p ../images
+			cp -fv output/images/rootfs.cpio.uboot ../images/
+			cd ..
+		fi
+}
+
+function create_sdcard {
+	echo "Setting up boot partition..."
+		cp images/BOOT.bin $SDCARD_BOOT
+		cp images/devicetree.dtb $SDCARD_BOOT
+		cp images/uImage $SDCARD_BOOT
+
+		mkdir -p $SDCARD_BOOT/fpga/conf
+		mkdir -p $SDCARD_BOOT/fpga/bitfile
+
+		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
+		cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
+
+		if [ "$ROOTFS" == "multistrap" ]; then
+			cp arch/uEnv-multistrap.txt $SDCARD_BOOT/uEnv.txt
+			echo "Copying root file system (may ask for root)..."
+			sudo cp -a multistrap/rootfs/* $SDCARD_ROOTFS
+		elif [ "$ROOTFS" == "buildroot" ]; then
+			cp arch/uEnv-buildroot.txt $SDCARD_BOOT/uEnv.txt
+			cp images/rootfs.cpio.uboot $SDCARD_BOOT
+		fi
+
+		sync
+
+		echo "Done."
+}
+
 
 
 case "$1" in
@@ -205,31 +259,7 @@ case "$1" in
 	'rootfs' )
 		check_rootfs_valid
 		check_sources
-		if [ "$ROOTFS" == "multistrap" ]; then
-			build_multistrap
-			build_api
-			copy_api
-			copy_ompi
-			echo "Installing kernel modules..."
-			cd linux-xlnx
-			sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
-			cd ..
-		elif [ "$ROOTFS" == "buildroot" ]; then
-			build_api
-			copy_api
-			copy_ompi
-			echo "Installing kernel modules..."
-			cd linux-xlnx
-			make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../buildroot-phantom/board/phantom_zynq/overlay/
-			cd ..
-			echo "Running Buildroot to generate rootfs..."
-			cd buildroot
-			make BR2_EXTERNAL=../buildroot-phantom phantom_zynq_defconfig
-			make
-			mkdir -p ../images
-			cp -fv output/images/rootfs.cpio.uboot ../images/
-			cd ..
-		fi
+		create_rootfs
 	;;
 
 	'api' )
@@ -251,30 +281,7 @@ case "$1" in
 
 	'sdcard' )
 		check_rootfs_valid
-
-		echo "Setting up boot partition..."
-		cp images/BOOT.bin $SDCARD_BOOT
-		cp images/devicetree.dtb $SDCARD_BOOT
-		cp images/uImage $SDCARD_BOOT
-
-		mkdir -p $SDCARD_BOOT/fpga/conf
-		mkdir -p $SDCARD_BOOT/fpga/bitfile
-
-		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
-		cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
-
-		if [ "$ROOTFS" == "multistrap" ]; then
-			cp arch/uEnv-multistrap.txt $SDCARD_BOOT/uEnv.txt
-			echo "Copying root file system (may ask for root)..."
-			sudo cp -a multistrap/rootfs/* $SDCARD_ROOTFS
-		elif [ "$ROOTFS" == "buildroot" ]; then
-			cp arch/uEnv-buildroot.txt $SDCARD_BOOT/uEnv.txt
-			cp images/rootfs.cpio.uboot $SDCARD_BOOT
-		fi
-		
-		sync
-
-		echo "Done."
+		create_sdcard
 	;;
 
 	'implement' )
@@ -305,8 +312,56 @@ case "$1" in
 		bootgen -image bootimage.bif -arch zynq -w -o i ../images/BOOT.bin
 	;;
 
+	'all' )
+		check_rootfs_valid
+		mkdir -p images
+		mkdir -p fsbl
+		# sources
+		fetch_sources
+		check_sources
+		# hwproj
+		cd arch
+		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `pwd`/../ $BOARD_PART ${@:2}
+		# implement
+		vivado -mode batch -source implement_project.tcl -notrace
+		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
+		cp ../hwproj/phantom_fpga_conf.xml ../images/phantom_fpga_conf.xml
+		# fsbl
+		hsi -nojournal -nolog -source generate_fsbl.tcl
+		cp ../fsbl/executable.elf ../images/fsbl.elf
+		# uboot
+		cd ../u-boot-xlnx
+		compile_environment
+		make ${UBOOT_TARGET}_defconfig
+		make
+		cp u-boot ../images/u-boot.elf
+		# bootimage
+		cd ../arch
+		bootgen -image bootimage.bif -arch zynq -w -o i ../images/BOOT.bin
+		# kernel
+		cd ../linux-xlnx
+		make xilinx_zynq_defconfig
+		cat ../custom/kernel_config >> .config
+		make uImage modules
+		cp arch/arm/boot/uImage ../images/
+		cp ../arch/*.dtsi arch/arm/boot/dts/
+		make $DEVICETREE
+		cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
+		# ompi
+		cd ..
+		build_ompi
+		# rootfs
+		create_rootfs
+		# sdcard
+		read -r -p "Copy to mounted SD card now? [y/N] " response
+		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
+		then
+			create_sdcard
+		fi
+	;;
+
 	'clean' )
-	read -r -p "Are you sure? [y/N] " response
+		read -r -p "Are you sure? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 		then
 			sudo umount -lf multistrap/rootfs/dev
@@ -320,7 +375,7 @@ case "$1" in
 
 	* )
 		echo "Unknown option: '$1'"
-		echo "Usage: $0 [prebuilt|sources|kernel|uboot|ompi|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean|hwxml]"
+		echo "Usage: $0 [prebuilt|sources|kernel|uboot|ompi|rootfs|api|hwproject|sdcard|devicetree|implement|fsbl|bootimage|clean|hwxml|all]"
 	;;
 
 esac
