@@ -121,6 +121,44 @@ function check_rootfs_valid {
 	fi
 }
 
+function fetch_sources {
+	echo "Fetching sources..."
+
+	if [ ! -d "linux-xlnx" ]; then
+		echo "Fetching Xilinx Linux kernel (${VIVADO_VERSION})..."
+		wget -O linux-xlnx.tar.gz $KERNEL_URL
+		tar -xzf linux-xlnx.tar.gz
+		rm -f linux-xlnx.tar.gz
+		mv linux-xlnx-xilinx-v${VIVADO_VERSION} linux-xlnx
+	fi
+
+	if [ ! -d "u-boot-xlnx" ]; then
+		echo "Fetching Xilinx U-Boot (${VIVADO_VERSION})..."
+		wget -O u-boot-xlnx.tar.gz $UBOOT_URL
+		tar -xzf u-boot-xlnx.tar.gz
+		rm -f u-boot-xlnx.tar.gz
+		mv u-boot-xlnx-xilinx-v${VIVADO_VERSION} u-boot-xlnx
+	fi
+
+	if [ ! -d "ompi" ]; then
+		echo "Fetching Open MPI (${OMPI_VERSION})..."
+		wget -O ompi.tar.bz2 $OMPI_URL
+		tar -xf ompi.tar.bz2
+		rm -f ompi.tar.bz2
+		mv openmpi-${OMPI_VERSION} ompi
+	fi
+
+	if [ "$ROOTFS" == "buildroot" ] && [ ! -d "buildroot" ]; then
+		echo "Fetching Buildroot (${BUILDROOT_VERSION})..."
+		wget -O buildroot.tar.bz2 $BUILDROOT_URL
+		tar -xf buildroot.tar.bz2
+		rm -f buildroot.tar.bz2
+		mv buildroot-${BUILDROOT_VERSION} buildroot
+	fi
+
+	echo "Done."
+}
+
 
 
 case "$1" in
@@ -131,41 +169,7 @@ case "$1" in
 	;;
 
 	'sources' )
-		echo "Fetching sources..."
-
-		if [ ! -d "linux-xlnx" ]; then
-			echo "Fetching Xilinx Linux kernel (${VIVADO_VERSION})..."
-			wget -O linux-xlnx.tar.gz $KERNEL_URL
-			tar -xzf linux-xlnx.tar.gz
-			rm -f linux-xlnx.tar.gz
-			mv linux-xlnx-xilinx-v${VIVADO_VERSION} linux-xlnx
-		fi
-
-		if [ ! -d "u-boot-xlnx" ]; then
-			echo "Fetching Xilinx U-Boot (${VIVADO_VERSION})..."
-			wget -O u-boot-xlnx.tar.gz $UBOOT_URL
-			tar -xzf u-boot-xlnx.tar.gz
-			rm -f u-boot-xlnx.tar.gz
-			mv u-boot-xlnx-xilinx-v${VIVADO_VERSION} u-boot-xlnx
-		fi
-
-		if [ ! -d "ompi" ]; then
-			echo "Fetching Open MPI (${OMPI_VERSION})..."
-			wget -O ompi.tar.bz2 $OMPI_URL
-			tar -xf ompi.tar.bz2
-			rm -f ompi.tar.bz2
-			mv openmpi-${OMPI_VERSION} ompi
-		fi
-
-		if [ ! -d "buildroot" ]; then
-			echo "Fetching Buildroot (${BUILDROOT_VERSION})..."
-			wget -O buildroot.tar.bz2 $BUILDROOT_URL
-			tar -xf buildroot.tar.bz2
-			rm -f buildroot.tar.bz2
-			mv buildroot-${BUILDROOT_VERSION} buildroot
-		fi
-
-		echo "Done."
+		fetch_sources
 	;;
 
 	'kernel' )
