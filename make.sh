@@ -294,6 +294,7 @@ case "$1" in
 
 	'devicetree' )
 		check_sources
+		compile_environment
 		build_devicetree
 	;;
 
