@@ -38,11 +38,27 @@ if {[llength $ips] > 16} {
 }
 
 puts "Creating PHANTOM project $proj_path/$proj_name"
+puts ""
 puts "Target board $brd_part"
 puts "IPs to include:"
 foreach ipname $ips {
 	puts "    $ipname"
 }
+puts ""
+
+puts "Looking up board part '$brd_part'..."
+set board_parts [get_board_parts $brd_part]
+set num_board_parts_found [llength $board_parts]
+if { $num_board_parts_found == 0 } {
+	error "    Specified board part '$brd_part' not found in Xilinx tools installation."
+}
+if { $num_board_parts_found > 1 } {
+	error "    Specified board part '$brd_part' not specific enough. $num_board_parts_found matching board parts found."
+}
+set board_display_name [get_property DISPLAY_NAME $board_parts]
+set board_part_name [get_property PART_NAME $board_parts]
+puts "    Found board: $board_display_name ($board_part_name)"
+puts ""
 
 
 # Determine path to IP cores
@@ -62,7 +78,8 @@ update_compile_order -fileset sources_1
 
 # Create output XML
 # Ideally a module like tDOM would be used for this, but no such modules are available in Xilinx's TCL distribution.
-set fp [open $proj_path/$proj_name/phantom_fpga_conf.xml w]
+set xml_path $proj_path/$proj_name/phantom_fpga_conf.xml
+set fp [open $xml_path w]
 puts $fp "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 puts $fp "<?phantom conf file version=\"0.1\"?>"
 puts $fp ""
@@ -121,7 +138,8 @@ foreach ipname $ips {
 	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"/phantom_dummy_4_0/M01_AXI\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\""  [get_bd_intf_pins processing_system7_0/S_AXI_HP3]
 	#	This shares an existing one:
 	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Slave "/processing_system7_0/S_AXI_HP0" Clk "Auto" }  [get_bd_intf_pins phantom_dummy_4_0/M02_AXI]
-	foreach master [get_bd_intf_pins -filter {MODE == Master} $core_name/*] {
+	set masters [get_bd_intf_pins -filter {MODE == Master} $core_name/*]
+	foreach master $masters {
 
 		# Enable HP connections
 		if { $mastermode } {
@@ -164,8 +182,8 @@ foreach ipname $ips {
 
 	# Print the core's address mapping
 	puts ""
-	puts "****************************************"
-	puts "* Address Map for '$core_name':"
+	puts "*****************************************"
+	puts "* Address Map for '$core_name' ($ipname):"
 	puts "* -------------------------------------"
 	puts "*  Slave at 0x[format %X $offset], size 0x1000000"
 	puts "* Master at 0x[format %X $membase], size 0x[format %X $memsize]"
@@ -209,4 +227,6 @@ update_compile_order -fileset sim_1
 puts $fp "</phantom_fpga>"
 close $fp
 
+puts ""
 puts "Project created."
+puts "Hardware information written to $xml_path"
