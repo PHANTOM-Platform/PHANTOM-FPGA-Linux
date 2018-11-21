@@ -13,6 +13,12 @@
 # IP cores should be placed in the phantom_ip directory.
 #
 
+set log_buffer ""
+proc log {text} {
+	upvar log_buffer x
+	append x $text "\n"
+}
+
 # Read command line arguments
 if {[llength $argv] < 3} {
 	puts "Warning: Required arguments <project name> <project path> <board part> \[<ip core>\]"
@@ -38,8 +44,8 @@ if {[llength $ips] > 16} {
 }
 
 puts "Creating PHANTOM project $proj_path/$proj_name"
-puts ""
 puts "Target board $brd_part"
+puts ""
 puts "IPs to include:"
 foreach ipname $ips {
 	puts "    $ipname"
@@ -182,15 +188,11 @@ foreach ipname $ips {
 	set_property offset $offset [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
 	set_property range 16M [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
 
-	# Print the core's address mapping
-	puts ""
-	puts "*****************************************"
-	puts "* Address Map for '$core_name' ($ipname):"
-	puts "* -------------------------------------"
-	puts "*  Slave at 0x[format %X $offset], size 0x1000000"
-	puts "* Master at 0x[format %X $membase], size 0x[format %X $memsize]"
-	puts "*****************************************"
-	puts ""
+	# Print the core's address mapping to log buffer
+	log ""
+	log "$core_name ($ipname)"
+    log "     Slave --  Address: 0x[format %X $offset]  Size: 0x1000000"
+    log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $memsize]"
 
 	# Output details to XML
 	puts $fp "\t<component_inst>"
@@ -230,5 +232,15 @@ puts $fp "</phantom_fpga>"
 close $fp
 
 puts ""
+
+puts "*************************************"
+puts "*  Design Summary"
+puts "********************"
+puts "FPGA Board: $board_display_name ($brd_part)"
+puts "FPGA Part: $board_part_name"
+puts $log_buffer
+puts "*************************************"
+puts ""
 puts "Project created."
 puts "Hardware information written to $xml_path"
+puts ""
