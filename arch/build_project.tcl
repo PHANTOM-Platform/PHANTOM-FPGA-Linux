@@ -86,11 +86,12 @@ puts $fp ""
 puts $fp "<phantom_fpga>"
 
 # Either zynq_apsoc (Zynq 7000) or zynq_mpsoc (Zynq Ultrascale+)
-puts $fp "<fpga_type>zynq_apsoc</fpga_type>"
-puts $fp "<target_device>fpgapart</target_device>"
-puts $fp "<target_board>$brd_part</target_board>"
-puts $fp "<design_name>$proj_name</design_name>"
-puts $fp "<design_bitfile>bitfile.bit</design_bitfile>"
+puts $fp "\t<fpga_type>zynq_apsoc</fpga_type>"
+puts $fp "\t<target_device>$board_part_name</target_device>"
+puts $fp "\t<target_board>$brd_part</target_board>"
+puts $fp "\t<target_board_display_name>$board_display_name</target_board_display_name>"
+puts $fp "\t<design_name>$proj_name</design_name>"
+puts $fp "\t<design_bitfile>bitstream.bit</design_bitfile>"
 
 # Add the Zynq IP
 puts "Adding fixed IP cores"
@@ -103,6 +104,7 @@ set mastermode 1
 
 # Get the size of DDR from the Processing System parameters
 set ddrsize [expr [get_property "CONFIG.PCW_DDR_RAM_HIGHADDR" $zynq_ps7] + 1]
+puts $fp "\t<ddr_size>$ddrsize</ddr_size>"
 
 # Allow 4MiB per component on master interface
 set memsize 0x400000
@@ -191,20 +193,20 @@ foreach ipname $ips {
 	puts ""
 
 	# Output details to XML
-	puts $fp "<component_inst>"
-	puts $fp "<name>$core_name</name>"
-	puts $fp "<id>[expr $current_num + 1000]</id>"
-	puts $fp "<ipname>$ipname</ipname>"
+	puts $fp "\t<component_inst>"
+	puts $fp "\t\t<name>$core_name</name>"
+	puts $fp "\t\t<id>$current_num</id>"
+	puts $fp "\t\t<ipname>$ipname</ipname>"
 	if {[info exists master]} {
-		puts $fp "<num_masters>[llength $master]</num_masters>"
+		puts $fp "\t\t<num_masters>[llength $masters]</num_masters>"
 	} else {
-		puts $fp "<num_masters>0</num_masters>"
+		puts $fp "\t\t<num_masters>0</num_masters>"
 	}
-	puts $fp "<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
-	puts $fp "<master_addr_range_0>$memsize</master_addr_range_0>"
-	puts $fp "<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
-	puts $fp "<slave_addr_range_0>0x1000000</slave_addr_range_0>"
-	puts $fp "</component_inst>"
+	puts $fp "\t\t<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
+	puts $fp "\t\t<master_addr_range_0>$memsize</master_addr_range_0>"
+	puts $fp "\t\t<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
+	puts $fp "\t\t<slave_addr_range_0>0x1000000</slave_addr_range_0>"
+	puts $fp "\t</component_inst>"
 
 	set current_num [expr $current_num + 1]
 	set membase [expr $membase - $memsize]
