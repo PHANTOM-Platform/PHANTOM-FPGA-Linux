@@ -1,0 +1,311 @@
+/dts-v1/;
+/plugin/;
+/*
+ * This device tree overlay describes the PHANTOM UIO devices that are part of
+ * the reconfigurable logic.
+ */
+
+/ {
+	fragment@0 {
+		target-path="/";
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			reserved-memory {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ranges;
+
+				phantom_master_0_mem: phantom_master_0_mem@3FC00000 {
+					reg = <0x3FC00000 0x400000>;
+				};
+				phantom_master_1_mem: phantom_master_1_mem@3F800000 {
+					reg = <0x3F800000 0x400000>;
+				};
+				phantom_master_2_mem: phantom_master_2_mem@3F400000 {
+					reg = <0x3F400000 0x400000>;
+				};
+				phantom_master_3_mem: phantom_master_3_mem@3F000000 {
+					reg = <0x3F000000 0x400000>;
+				};
+				phantom_master_4_mem: phantom_master_4_mem@3EC00000 {
+					reg = <0x3EC00000 0x400000>;
+				};
+				phantom_master_5_mem: phantom_master_5_mem@3E800000 {
+					reg = <0x3E800000 0x400000>;
+				};
+				phantom_master_6_mem: phantom_master_6_mem@3E400000 {
+					reg = <0x3E400000 0x400000>;
+				};
+				phantom_master_7_mem: phantom_master_7_mem@3E000000 {
+					reg = <0x3E000000 0x400000>;
+				};
+				phantom_master_8_mem: phantom_master_8_mem@3DC00000 {
+					reg = <0x3DC00000 0x400000>;
+				};
+				phantom_master_9_mem: phantom_master_9_mem@3D800000 {
+					reg = <0x3D800000 0x400000>;
+				};
+				phantom_master_10_mem: phantom_master_10_mem@3D400000 {
+					reg = <0x3D400000 0x400000>;
+				};
+				phantom_master_11_mem: phantom_master_11_mem@3D000000 {
+					reg = <0x3D000000 0x400000>;
+				};
+				phantom_master_12_mem: phantom_master_12_mem@3CC00000 {
+					reg = <0x3CC00000 0x400000>;
+				};
+				phantom_master_13_mem: phantom_master_13_mem@3C800000 {
+					reg = <0x3C800000 0x400000>;
+				};
+				phantom_master_14_mem: phantom_master_14_mem@3C400000 {
+					reg = <0x3C400000 0x400000>;
+				};
+				phantom_master_15_mem: phantom_master_15_mem@3C000000 {
+					reg = <0x3C000000 0x400000>;
+				};
+			};
+
+			phantom_master_0@3FC00000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3FC00000 0x400000>;
+				memory-region = <&phantom_master_0_mem>;
+			};
+
+			phantom_master_1@3F800000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3F800000 0x400000>;
+				memory-region = <&phantom_master_1_mem>;
+			};
+
+			phantom_master_2@3F400000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3F400000 0x400000>;
+				memory-region = <&phantom_master_2_mem>;
+			};
+
+			phantom_master_3@3F000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3F000000 0x400000>;
+				memory-region = <&phantom_master_3_mem>;
+			};
+
+			phantom_master_4@3EC00000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3EC00000 0x400000>;
+				memory-region = <&phantom_master_4_mem>;
+			};
+
+			phantom_master_5@3E800000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3E800000 0x400000>;
+				memory-region = <&phantom_master_5_mem>;
+			};
+
+			phantom_master_6@3E400000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3E400000 0x400000>;
+				memory-region = <&phantom_master_6_mem>;
+			};
+
+			phantom_master_7@3E000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3E000000 0x400000>;
+				memory-region = <&phantom_master_7_mem>;
+			};
+
+			phantom_master_8@3DC00000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3DC00000 0x400000>;
+				memory-region = <&phantom_master_8_mem>;
+			};
+
+			phantom_master_9@3D800000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3D800000 0x400000>;
+				memory-region = <&phantom_master_9_mem>;
+			};
+
+			phantom_master_10@3D400000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3D400000 0x400000>;
+				memory-region = <&phantom_master_10_mem>;
+			};
+
+			phantom_master_11@3D000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3D000000 0x400000>;
+				memory-region = <&phantom_master_11_mem>;
+			};
+
+			phantom_master_12@3CC00000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3CC00000 0x400000>;
+				memory-region = <&phantom_master_12_mem>;
+			};
+
+			phantom_master_13@3C800000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3C800000 0x400000>;
+				memory-region = <&phantom_master_13_mem>;
+			};
+
+			phantom_master_14@3C400000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3C400000 0x400000>;
+				memory-region = <&phantom_master_14_mem>;
+			};
+
+			phantom_master_15@3C000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x3C000000 0x400000>;
+				memory-region = <&phantom_master_15_mem>;
+			};
+
+			phantom_slave_0@40000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x40000000 0x1000000>;
+			};
+
+			phantom_slave_1@41000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x41000000 0x1000000>;
+			};
+
+			phantom_slave_2@42000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x42000000 0x1000000>;
+			};
+
+			phantom_slave_3@43000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x43000000 0x1000000>;
+			};
+
+			phantom_slave_4@44000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x44000000 0x1000000>;
+			};
+
+			phantom_slave_5@45000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x45000000 0x1000000>;
+			};
+
+			phantom_slave_6@46000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x46000000 0x1000000>;
+			};
+
+			phantom_slave_7@47000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x47000000 0x1000000>;
+			};
+
+			phantom_slave_8@48000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x48000000 0x1000000>;
+			};
+
+			phantom_slave_9@49000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x49000000 0x1000000>;
+			};
+
+			phantom_slave_10@4a000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x4a000000 0x1000000>;
+			};
+
+			phantom_slave_11@4b000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x4b000000 0x1000000>;
+			};
+
+			phantom_slave_12@4c000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x4c000000 0x1000000>;
+			};
+
+			phantom_slave_13@4d000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x4d000000 0x1000000>;
+			};
+
+			phantom_slave_14@4e000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x4e000000 0x1000000>;
+			};
+
+			phantom_slave_15@4f000000 {
+				compatible = "phantom_platform,generic-uio,ui_pdrv";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				reg = <0x4f000000 0x1000000>;
+			};
+		};
+	};
+};

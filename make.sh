@@ -77,10 +77,11 @@ function build_multistrap {
 function build_devicetree {
 	mkdir -p images
 	cd linux-xlnx
-	cp ../arch/*.dtsi arch/arm/boot/dts/
 	make ARCH=arm $DEVICETREE
 	cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
 	cd ..
+	cd arch
+	dtc -I dts -O dtb -W no-unit_address_vs_reg -o ../images/phantom_uio_devices.dtbo phantom_uio_devices_overlay.dts
 }
 
 function build_ompi {
@@ -191,6 +192,7 @@ function create_sdcard {
 	echo "Setting up boot partition..."
 		cp images/BOOT.bin $SDCARD_BOOT
 		cp images/devicetree.dtb $SDCARD_BOOT
+		cp images/phantom_uio_devices.dtbo $SDCARD_BOOT
 		cp images/uImage $SDCARD_BOOT
 
 		mkdir -p $SDCARD_BOOT/fpga/conf
@@ -347,7 +349,6 @@ case "$1" in
 		cat ../custom/kernel_config >> .config
 		make uImage modules
 		cp arch/arm/boot/uImage ../images/
-		cp ../arch/*.dtsi arch/arm/boot/dts/
 		make $DEVICETREE
 		cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
 		# ompi

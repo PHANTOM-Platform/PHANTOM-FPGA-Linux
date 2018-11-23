@@ -3,3 +3,4 @@
 # PHANTOM U-Boot Customisations
 #
 CONFIG_OF_EMBED=y
+CONFIG_OF_LIBFDT_OVERLAY=y
