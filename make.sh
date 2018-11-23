@@ -246,6 +246,7 @@ case "$1" in
 		cd u-boot-xlnx
 		compile_environment
 		make ${UBOOT_TARGET}_defconfig
+		cat ../arch/u-boot_config >> .config
 		make
 		cp u-boot ../images/u-boot.elf
 	;;
@@ -334,6 +335,7 @@ case "$1" in
 		cd ../u-boot-xlnx
 		compile_environment
 		make ${UBOOT_TARGET}_defconfig
+		cat ../arch/u-boot_config >> .config
 		make
 		cp u-boot ../images/u-boot.elf
 		# bootimage

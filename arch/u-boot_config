@@ -1,0 +1,5 @@
+
+#
+# PHANTOM U-Boot Customisations
+#
+CONFIG_OF_EMBED=y
