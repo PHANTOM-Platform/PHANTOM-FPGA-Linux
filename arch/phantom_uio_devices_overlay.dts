@@ -18,51 +18,67 @@
 				ranges;
 
 				phantom_master_0_mem: phantom_master_0_mem@3FC00000 {
+					no-map;
 					reg = <0x3FC00000 0x400000>;
 				};
 				phantom_master_1_mem: phantom_master_1_mem@3F800000 {
+					no-map;
 					reg = <0x3F800000 0x400000>;
 				};
 				phantom_master_2_mem: phantom_master_2_mem@3F400000 {
+					no-map;
 					reg = <0x3F400000 0x400000>;
 				};
 				phantom_master_3_mem: phantom_master_3_mem@3F000000 {
+					no-map;
 					reg = <0x3F000000 0x400000>;
 				};
 				phantom_master_4_mem: phantom_master_4_mem@3EC00000 {
+					no-map;
 					reg = <0x3EC00000 0x400000>;
 				};
 				phantom_master_5_mem: phantom_master_5_mem@3E800000 {
+					no-map;
 					reg = <0x3E800000 0x400000>;
 				};
 				phantom_master_6_mem: phantom_master_6_mem@3E400000 {
+					no-map;
 					reg = <0x3E400000 0x400000>;
 				};
 				phantom_master_7_mem: phantom_master_7_mem@3E000000 {
+					no-map;
 					reg = <0x3E000000 0x400000>;
 				};
 				phantom_master_8_mem: phantom_master_8_mem@3DC00000 {
+					no-map;
 					reg = <0x3DC00000 0x400000>;
 				};
 				phantom_master_9_mem: phantom_master_9_mem@3D800000 {
+					no-map;
 					reg = <0x3D800000 0x400000>;
 				};
 				phantom_master_10_mem: phantom_master_10_mem@3D400000 {
+					no-map;
 					reg = <0x3D400000 0x400000>;
 				};
 				phantom_master_11_mem: phantom_master_11_mem@3D000000 {
+					no-map;
 					reg = <0x3D000000 0x400000>;
 				};
 				phantom_master_12_mem: phantom_master_12_mem@3CC00000 {
+					no-map;
 					reg = <0x3CC00000 0x400000>;
 				};
 				phantom_master_13_mem: phantom_master_13_mem@3C800000 {
+					no-map;
 					reg = <0x3C800000 0x400000>;
 				};
 				phantom_master_14_mem: phantom_master_14_mem@3C400000 {
+					no-map;
 					reg = <0x3C400000 0x400000>;
 				};
 				phantom_master_15_mem: phantom_master_15_mem@3C000000 {
+					no-map;
 					reg = <0x3C000000 0x400000>;
 				};
 			};

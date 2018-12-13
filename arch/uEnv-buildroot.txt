@@ -20,3 +20,6 @@ ramdiskload=load mmc 0 ${ramdisk_load_address} ${ramdisk_image}
 bootlinux=bootm ${kernel_load_address} ${ramdisk_load_address} ${devicetree_load_address}
 
 uenvcmd=run fpgaload; run kernelload && run devicetreeload && run devicetreeoverlay && run ramdiskload && run bootlinux
+
+initrd_high=0x3C000000
+fdt_high=0x3C000000
