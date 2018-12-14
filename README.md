@@ -6,7 +6,11 @@ If you are using the ZC706, you only need set up an SD card, copy over the image
 
 Note that many of these commands require that the Xilinx tools are in your `$PATH` so ensure that they are correctly installed.
 
-## Required packages
+## Installation
+
+To begin, clone the repository.
+
+    git clone https://github.com/PHANTOM-Platform/PHANTOM-FPGA-Linux.git
 
 Before running the build script you will need:
  * [Multistrap](https://wiki.debian.org/Multistrap) (if using the Debian-based file system)
@@ -16,9 +20,11 @@ Before running the build script you will need:
  * QEMU
  * Xilinx Vivado tools with Zynq-7000 support (imported into the current environment)
 
-On Debian or Ubuntu-based distributions you can simply do the following:
+On Debian or Ubuntu-based distributions you can install these with the following command:
 
 	sudo apt-get install multistrap device-tree-compiler u-boot-tools libssl-dev dpkg-dev qemu-user-static
+
+To install the Xilinx tools, consult the documentation that comes with Vivado.
 
 ## Quick Start
 
