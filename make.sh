@@ -349,10 +349,10 @@ case "$1" in
 		cat ../custom/kernel_config >> .config
 		make uImage modules
 		cp arch/arm/boot/uImage ../images/
-		make $DEVICETREE
-		cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
-		# ompi
 		cd ..
+		# devicetree
+		build_devicetree
+		# ompi
 		build_ompi
 		# rootfs
 		create_rootfs
