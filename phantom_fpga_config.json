@@ -1,0 +1,20 @@
+{
+	"target": {
+		"board": "zc706",
+		"rootfs": "buildroot"
+	},
+	"ipcores": [
+		{
+			"ipname": "phantom_dummy_2",
+			"memory": 4096
+		},
+		{
+			"ipname": "phantom_dummy_4",
+			"memory": 8388608
+		},
+		{
+			"ipname": "phantom_dummy_0",
+			"memory": 0
+		}
+	]
+}

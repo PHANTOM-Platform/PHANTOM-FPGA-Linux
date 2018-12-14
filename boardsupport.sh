@@ -2,6 +2,9 @@
 
 # This script sets up the variables required for the target board. It is sourced by make.sh.
 
+# The target FPGA board to use (taken from 'phantom_fpga_config.json').
+BOARD=`./config.py --board phantom_fpga_config.json`
+
 # DEVICETREE
 # This is the devicetree file to use from the Linux kernel source tree.
 # Xilinx provides these for all of its boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders.
@@ -16,7 +19,7 @@
 # You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
 # Common examples are: xilinx.com:zc706:part0:1.3 digilentinc.com:zedboard:part0:1.0 digilentinc.com:zybo:part0:1.0
 
-case "$1" in
+case "$BOARD" in
 	'zc706' )
 		DEVICETREE=zynq-zc706.dtb
 		UBOOT_TARGET=zynq_zc706
@@ -42,17 +45,22 @@ case "$1" in
 	;;
 
 	* )
-		echo "Unsupported board type: $1"
+		echo "Unsupported board type: $BOARD"
 		return 1
 	;;
 esac
 
 
-# The root file system type to generate.
+# The target root file system type to generate (taken from 'phantom_fpga_config.json').
 # Options are:
 #   'multistrap' -- a full Debian-based system, to be installed to the second SD card partition
 #   'buildroot' -- a minimal BusyBox-based system, to be run as a RAM disk
-ROOTFS=buildroot
+ROOTFS=`./config.py --rootfs phantom_fpga_config.json`
+
+# The list of IP cores and shared memory sizes to include in the design (taken from 'phantom_fpga_config.json').
+# Format is:
+#   ipcore1 memsize1 ipcore2 memsize2 ...
+IPCORES=`./config.py --ipcores phantom_fpga_config.json`
 
 # The version of the Xilinx Linux kernel, U-Boot, Open MPI and Buildroot to use.
 # It is recommended to change the Vivado version to that used for building the hardware.
@@ -65,6 +73,3 @@ KERNEL_URL=https://github.com/Xilinx/linux-xlnx/archive/xilinx-v${VIVADO_VERSION
 UBOOT_URL=https://github.com/Xilinx/u-boot-xlnx/archive/xilinx-v${VIVADO_VERSION}.tar.gz
 OMPI_URL=https://www.open-mpi.org/software/ompi/v${OMPI_VERSION%.*}/downloads/openmpi-${OMPI_VERSION}.tar.bz2
 BUILDROOT_URL=https://buildroot.org/downloads/buildroot-${BUILDROOT_VERSION}.tar.bz2
-
-
-

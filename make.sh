@@ -2,8 +2,8 @@
 #
 # This is the main build script for the PHANTOM FPGA Linux platform.
 #
-# Before running, ensure that the $TARGET environment variable is set to a
-# target board (as listed in boardsupport.sh)
+# Before running, ensure that the 'phantom_fpga_config.json' file describes the
+# required target platform (see boardsupport.sh)
 #
 # Also, if your SD card partitions are mounted at non-standard locations set
 # $SDCARD_BOOT and $SDCARD_ROOTFS
@@ -18,16 +18,8 @@ if [[ -z "${SDCARD_ROOTFS}" ]]; then
 	SDCARD_ROOTFS=/media/$USER/Linux/
 fi
 
-
-# boadsupport.sh sets variables based on the target board
-if [[ -z "${TARGET}" ]]; then
-	echo "The environment variable TARGET is not set."
-	echo "Set it to the desired target board, as listed in boardsupport.sh"
-	exit 1
-fi
-. ./boardsupport.sh $TARGET
-
-
+# boadsupport.sh sets variables based on the target configuration file
+source ./boardsupport.sh
 
 
 function compile_environment {
@@ -272,7 +264,7 @@ case "$1" in
 
 	'hwproject' )
 		cd arch
-		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `(cd ..; pwd)` $BOARD_PART ${@:2}
+		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `(cd ..; pwd)` $BOARD_PART $IPCORES
 	;;
 
 	'hwxml' )

@@ -3,12 +3,12 @@
 #
 # This script constructs a Vivado project that implements a PHANTOM-compatible FPGA design.
 # Should be executed from the command line using Vivado in batch mode as follows:
-#    vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs proj ~ xilinx.com:zc706:part0:1.3 ip1 ip2 ip3
+#    vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs proj ~ xilinx.com:zc706:part0:1.3 ip1 mem_size1 ip2 mem_size2 ip3 mem_size3
 #
 #  argv[0] = project name
 #  argv[1] = path in which to create project
 #  argv[2] = Board part to target
-#  all subsequent arguments are the IP cores to add to the project.
+#  all subsequent arguments are the IP cores to add to the project, and their shared memory allocations.
 #
 # IP cores should be placed in the phantom_ip directory.
 #
@@ -21,7 +21,7 @@ proc log {text} {
 
 # Read command line arguments
 if {[llength $argv] < 3} {
-	puts "Warning: Required arguments <project name> <project path> <board part> \[<ip core>\]"
+	puts "Warning: Required arguments <project name> <project path> <board part> \[<ip core> <memory size>\] \[<ip core> <memory size>\] ..."
 	puts "Using default values."
 
 	set proj_name "testing"
@@ -34,8 +34,8 @@ if {[llength $argv] < 3} {
 	set brd_part [lindex $argv 2]
 
 	set ips ""
-	for { set i 3 } { $i < [llength $argv] } { incr i } {
-		lappend ips [lindex $argv $i]
+	for { set i 3 } { $i < [llength $argv] } { set i [expr $i + 2] } {
+		lappend ips [list [lindex $argv $i] [lindex $argv [expr $i + 1]]]
 	}
 }
 
@@ -47,8 +47,10 @@ puts "Creating PHANTOM project $proj_path/$proj_name"
 puts "Target board $brd_part"
 puts ""
 puts "IPs to include:"
-foreach ipname $ips {
-	puts "    $ipname"
+foreach ip $ips {
+	set ipname [lindex $ip 0]
+	set ipmemsize [lindex $ip 1]
+	puts "    $ipname ($ipmemsize bytes)"
 }
 puts ""
 
@@ -112,11 +114,11 @@ set mastermode 1
 set ddrsize [expr [get_property "CONFIG.PCW_DDR_RAM_HIGHADDR" $zynq_ps7] + 1]
 puts $fp "\t<ddr_size>$ddrsize</ddr_size>"
 
-# Allow 4MiB per component on master interface
-set memsize 0x400000
-set membase [expr $ddrsize - $memsize]
+set membase $ddrsize
 
-foreach ipname $ips {
+foreach ip $ips {
+	set ipname [lindex $ip 0]
+	set ipmemsize [lindex $ip 1]
 	puts "Processing IP $ipname"
 
 	set ip [get_ipdefs -quiet *$ipname*]
@@ -128,6 +130,9 @@ foreach ipname $ips {
 	if { $num_found > 1 } {
 		error "Specified IP $ipname not specific enough. $num_found matching IP cores found."
 	}
+
+	# Calculate base master interface memory address for this IP core
+	set membase [expr $membase - $ipmemsize]
 
 	# Add the PHANTOM core
 	set core_name phantom_$current_num
@@ -165,7 +170,7 @@ foreach ipname $ips {
 		# Set allocated memory range for this component's master interfaces
 		foreach addr_space [get_bd_addr_spaces -of_objects $master] {
 			puts "Mapping $master to address 0x[format %X $membase]"
-			set_property range $memsize [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
+			set_property range $ipmemsize [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
 			set_property offset $membase [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
 		}
 
@@ -192,7 +197,7 @@ foreach ipname $ips {
 	log ""
 	log "$core_name ($ipname)"
     log "     Slave --  Address: 0x[format %X $offset]  Size: 0x1000000"
-    log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $memsize]"
+    log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $ipmemsize]"
 
 	# Output details to XML
 	puts $fp "\t<component_inst>"
@@ -205,13 +210,12 @@ foreach ipname $ips {
 		puts $fp "\t\t<num_masters>0</num_masters>"
 	}
 	puts $fp "\t\t<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
-	puts $fp "\t\t<master_addr_range_0>$memsize</master_addr_range_0>"
+	puts $fp "\t\t<master_addr_range_0>0x[format %X $ipmemsize]</master_addr_range_0>"
 	puts $fp "\t\t<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
 	puts $fp "\t\t<slave_addr_range_0>0x1000000</slave_addr_range_0>"
 	puts $fp "\t</component_inst>"
 
 	set current_num [expr $current_num + 1]
-	set membase [expr $membase - $memsize]
 }
 
 # Validate the design - this might produce some warnings (some can be ignored)
