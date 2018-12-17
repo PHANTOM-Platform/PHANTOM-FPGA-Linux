@@ -1,0 +1,28 @@
+/dts-v1/;
+/plugin/;
+/*
+ * This device tree overlay describes the PHANTOM UIO devices that are part of
+ * the reconfigurable logic.
+ */
+
+/ {
+	fragment@0 {
+		target-path="/";
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			reserved-memory {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ranges;
+
+/* PHANTOM RESERVED MEMORY */
+			};
+
+/* PHANTOM MASTERS */
+
+/* PHANTOM SLAVES */
+		};
+	};
+};

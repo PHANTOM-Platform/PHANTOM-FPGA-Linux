@@ -72,8 +72,7 @@ function build_devicetree {
 	make ARCH=arm $DEVICETREE
 	cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
 	cd ..
-	cd arch
-	dtc -I dts -O dtb -W no-unit_address_vs_reg -o ../images/phantom_uio_devices.dtbo phantom_uio_devices_overlay.dts
+	arch/generate_environment.py --devicetree hwproj/phantom_fpga_conf.xml arch/phantom_uio_devices_overlay_template.dts | dtc -I dts -O dtb -W no-unit_address_vs_reg -o images/phantom_uio_devices.dtbo
 }
 
 function build_ompi {
@@ -154,59 +153,68 @@ function fetch_sources {
 
 function create_rootfs {
 	if [ "$ROOTFS" == "multistrap" ]; then
-			build_multistrap
-			build_api
-			copy_api
-			copy_ompi
-			echo "Installing kernel modules..."
-			cd linux-xlnx
-			sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
-			cd ..
-		elif [ "$ROOTFS" == "buildroot" ]; then
-			build_api
-			copy_api
-			copy_ompi
-			echo "Installing kernel modules..."
-			cd linux-xlnx
-			make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../buildroot-phantom/board/phantom_zynq/overlay/
-			cd ..
-			echo "Running Buildroot to generate rootfs..."
-			cd buildroot
-			make BR2_EXTERNAL=../buildroot-phantom phantom_zynq_defconfig
-			make
-			mkdir -p ../images
-			cp -fv output/images/rootfs.cpio.uboot ../images/
-			cd ..
-		fi
+		build_multistrap
+		build_api
+		copy_api
+		copy_ompi
+		echo "Installing kernel modules..."
+		cd linux-xlnx
+		sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
+		cd ..
+	elif [ "$ROOTFS" == "buildroot" ]; then
+		build_api
+		copy_api
+		copy_ompi
+		echo "Installing kernel modules..."
+		cd linux-xlnx
+		make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../buildroot-phantom/board/phantom_zynq/overlay/
+		cd ..
+		echo "Running Buildroot to generate rootfs..."
+		cd buildroot
+		make BR2_EXTERNAL=../buildroot-phantom phantom_zynq_defconfig
+		make
+		mkdir -p ../images
+		cp -fv output/images/rootfs.cpio.uboot ../images/
+		cd ..
+	fi
 }
 
 function create_sdcard {
 	echo "Setting up boot partition..."
-		cp images/BOOT.bin $SDCARD_BOOT
-		cp images/devicetree.dtb $SDCARD_BOOT
-		cp images/phantom_uio_devices.dtbo $SDCARD_BOOT
-		cp images/uImage $SDCARD_BOOT
+	cp images/BOOT.bin $SDCARD_BOOT
+	cp images/devicetree.dtb $SDCARD_BOOT
+	cp images/phantom_uio_devices.dtbo $SDCARD_BOOT
+	cp images/uImage $SDCARD_BOOT
 
-		mkdir -p $SDCARD_BOOT/fpga/conf
-		mkdir -p $SDCARD_BOOT/fpga/bitfile
+	mkdir -p $SDCARD_BOOT/fpga/conf
+	mkdir -p $SDCARD_BOOT/fpga/bitfile
 
-		cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
-		cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
+	cp images/bitstream.bit $SDCARD_BOOT/fpga/bitfile
+	cp images/phantom_fpga_conf.xml $SDCARD_BOOT/fpga/conf
+	cp images/uEnv.txt $SDCARD_BOOT/uEnv.txt
 
-		if [ "$ROOTFS" == "multistrap" ]; then
-			cp arch/uEnv-multistrap.txt $SDCARD_BOOT/uEnv.txt
-			echo "Copying root file system (may ask for root)..."
-			sudo cp -a multistrap/rootfs/* $SDCARD_ROOTFS
-		elif [ "$ROOTFS" == "buildroot" ]; then
-			cp arch/uEnv-buildroot.txt $SDCARD_BOOT/uEnv.txt
-			cp images/rootfs.cpio.uboot $SDCARD_BOOT
-		fi
+	if [ "$ROOTFS" == "multistrap" ]; then
+		echo "Copying root file system (may ask for root password)..."
+		sudo cp -a multistrap/rootfs/* $SDCARD_ROOTFS
+	elif [ "$ROOTFS" == "buildroot" ]; then
+		cp images/rootfs.cpio.uboot $SDCARD_BOOT
+	fi
 
-		sync
+	sync
 
-		echo "Done."
+	echo "Done."
 }
 
+function generate_uenv {
+	check_rootfs_valid
+	if [ "$ROOTFS" == "multistrap" ]; then
+		uenv_template=uEnv-multistrap_template.txt
+	elif [ "$ROOTFS" == "buildroot" ]; then
+		uenv_template=uEnv-buildroot_template.txt
+	fi
+	mkdir -p images
+	arch/generate_environment.py --uenv hwproj/phantom_fpga_conf.xml arch/$uenv_template > images/uEnv.txt
+}
 
 
 case "$1" in
@@ -255,6 +263,7 @@ case "$1" in
 		check_rootfs_valid
 		check_sources
 		create_rootfs
+		generate_uenv
 	;;
 
 	'api' )
@@ -265,6 +274,8 @@ case "$1" in
 	'hwproject' )
 		cd arch
 		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `(cd ..; pwd)` $BOARD_PART $IPCORES
+		cd ..
+		generate_uenv
 	;;
 
 	'hwxml' )
@@ -276,6 +287,7 @@ case "$1" in
 
 	'sdcard' )
 		check_rootfs_valid
+		generate_uenv
 		create_sdcard
 	;;
 
@@ -348,6 +360,7 @@ case "$1" in
 		build_ompi
 		# rootfs
 		create_rootfs
+		generate_uenv
 		# sdcard
 		read -r -p "Copy to mounted SD card now? [y/N] " response
 		if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]

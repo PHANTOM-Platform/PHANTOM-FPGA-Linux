@@ -196,8 +196,10 @@ foreach ip $ips {
 	# Print the core's address mapping to log buffer
 	log ""
 	log "$core_name ($ipname)"
-    log "     Slave --  Address: 0x[format %X $offset]  Size: 0x1000000"
-    log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $ipmemsize]"
+	log "     Slave --  Address: 0x[format %X $offset]  Size: 0x1000000"
+	if {$ipmemsize != 0} {
+		log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $ipmemsize]"
+	}
 
 	# Output details to XML
 	puts $fp "\t<component_inst>"
