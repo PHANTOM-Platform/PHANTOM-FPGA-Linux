@@ -315,9 +315,9 @@ case "$1" in
 		# sources
 		fetch_sources
 		check_sources
-		# hwproj
+		# hwproject
 		cd arch
-		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `(cd ..; pwd)` $BOARD_PART ${@:2}
+		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `(cd ..; pwd)` $BOARD_PART $IPCORES
 		# implement
 		vivado -mode batch -source implement_project.tcl -notrace
 		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
