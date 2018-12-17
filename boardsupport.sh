@@ -3,7 +3,7 @@
 # This script sets up the variables required for the target board. It is sourced by make.sh.
 
 # The target FPGA board to use (taken from 'phantom_fpga_config.json').
-BOARD=`./config.py --board phantom_fpga_config.json`
+BOARD=`arch/config.py --board phantom_fpga_config.json`
 
 # DEVICETREE
 # This is the devicetree file to use from the Linux kernel source tree.
@@ -55,12 +55,12 @@ esac
 # Options are:
 #   'multistrap' -- a full Debian-based system, to be installed to the second SD card partition
 #   'buildroot' -- a minimal BusyBox-based system, to be run as a RAM disk
-ROOTFS=`./config.py --rootfs phantom_fpga_config.json`
+ROOTFS=`arch/config.py --rootfs phantom_fpga_config.json`
 
 # The list of IP cores and shared memory sizes to include in the design (taken from 'phantom_fpga_config.json').
 # Format is:
 #   ipcore1 memsize1 ipcore2 memsize2 ...
-IPCORES=`./config.py --ipcores phantom_fpga_config.json`
+IPCORES=`arch/config.py --ipcores phantom_fpga_config.json`
 
 # The version of the Xilinx Linux kernel, U-Boot, Open MPI and Buildroot to use.
 # It is recommended to change the Vivado version to that used for building the hardware.
