@@ -1,0 +1,26 @@
+bitstream_load_address=0x1000000
+devicetree_load_address=0x2000000
+devicetreeoverlay_load_address=0x2040000
+kernel_load_address=0x2080000
+ramdisk_load_address=0x4000000
+
+bitstream_image=/fpga/bitfile/bitstream.bit
+kernel_image=uImage
+devicetree_image=devicetree.dtb
+devicetreeoverlay_image=phantom_uio_devices.dtbo
+ramdisk_image=rootfs.cpio.uboot
+
+bootargs=console=ttyPS0,115200 uio_pdrv_genirq.of_id=phantom_platform,generic-uio,ui_pdrv
+
+fpgaload=if test -e mmc 0 ${bitstream_image}; then load mmc 0 ${bitstream_load_address} ${bitstream_image} && fpga loadb 0 ${bitstream_load_address} ${filesize}; fi
+kernelload=load mmc 0 ${kernel_load_address} ${kernel_image}
+devicetreeload=load mmc 0 ${devicetree_load_address} ${devicetree_image} && fdt addr ${devicetree_load_address}
+devicetreeoverlay=if test -e mmc 0 ${devicetreeoverlay_image}; then load mmc 0 ${devicetreeoverlay_load_address} ${devicetreeoverlay_image} && fdt resize ${filesize} && fdt apply ${devicetreeoverlay_load_address}; fi
+ramdiskload=load mmc 0 ${ramdisk_load_address} ${ramdisk_image}
+bootlinux=bootm ${kernel_load_address} ${ramdisk_load_address} ${devicetree_load_address}
+
+uenvcmd=run fpgaload; run kernelload && run devicetreeload && run devicetreeoverlay && run ramdiskload && run bootlinux
+
+initrd_high=0x30000000
+fdt_high=0x30000000
+

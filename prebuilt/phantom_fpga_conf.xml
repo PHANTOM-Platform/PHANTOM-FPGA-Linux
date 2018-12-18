@@ -2,17 +2,41 @@
 <?phantom conf file version="0.1"?>
 
 <phantom_fpga>
-<fpga_type>zynq_apsoc</fpga_type>
-<target_device>fpgapart</target_device>
-<target_board>xilinx.com:zc706:part0:1.3</target_board>
-<design_name>hwproj</design_name>
-<design_bitfile>bitfile.bit</design_bitfile>
-<component_inst>
-<name>phantom_0</name>
-<id>1000</id>
-<ipname>phantom_dummy_2</ipname>
-<num_masters>1</num_masters>
-<slave_addr_base_0>0x40000000</slave_addr_base_0>
-<slave_addr_range_0>0x1000</slave_addr_range_0>
-</component_inst>
+	<fpga_type>zynq_apsoc</fpga_type>
+	<target_device>xc7z045ffg900-2</target_device>
+	<target_board>xilinx.com:zc706:part0:1.3</target_board>
+	<target_board_display_name>ZYNQ-7 ZC706 Evaluation Board</target_board_display_name>
+	<design_name>hwproj</design_name>
+	<design_bitfile>bitstream.bit</design_bitfile>
+	<ddr_size>1073741824</ddr_size>
+	<component_inst>
+		<name>phantom_0</name>
+		<id>0</id>
+		<ipname>phantom_dummy_4</ipname>
+		<num_masters>4</num_masters>
+		<master_addr_base_0>0x3F800000</master_addr_base_0>
+		<master_addr_range_0>0x800000</master_addr_range_0>
+		<slave_addr_base_0>0x40000000</slave_addr_base_0>
+		<slave_addr_range_0>0x1000000</slave_addr_range_0>
+	</component_inst>
+	<component_inst>
+		<name>phantom_1</name>
+		<id>1</id>
+		<ipname>phantom_dummy_2</ipname>
+		<num_masters>2</num_masters>
+		<master_addr_base_0>0x3F7FF000</master_addr_base_0>
+		<master_addr_range_0>0x1000</master_addr_range_0>
+		<slave_addr_base_0>0x41000000</slave_addr_base_0>
+		<slave_addr_range_0>0x1000000</slave_addr_range_0>
+	</component_inst>
+	<component_inst>
+		<name>phantom_2</name>
+		<id>2</id>
+		<ipname>phantom_dummy_0</ipname>
+		<num_masters>0</num_masters>
+		<master_addr_base_0>0x3F7FF000</master_addr_base_0>
+		<master_addr_range_0>0x0</master_addr_range_0>
+		<slave_addr_base_0>0x42000000</slave_addr_base_0>
+		<slave_addr_range_0>0x1000000</slave_addr_range_0>
+	</component_inst>
 </phantom_fpga>
