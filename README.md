@@ -6,7 +6,11 @@ If you are using the ZC706, you only need set up an SD card, copy over the image
 
 Note that many of these commands require that the Xilinx tools are in your `$PATH` so ensure that they are correctly installed.
 
-## Required packages
+## Installation
+
+To begin, clone the repository.
+
+    git clone https://github.com/PHANTOM-Platform/PHANTOM-FPGA-Linux.git
 
 Before running the build script you will need:
  * [Multistrap](https://wiki.debian.org/Multistrap) (if using the Debian-based file system)
@@ -16,9 +20,11 @@ Before running the build script you will need:
  * QEMU
  * Xilinx Vivado tools with Zynq-7000 support (imported into the current environment)
 
-On Debian or Ubuntu-based distributions you can simply do the following:
+On Debian or Ubuntu-based distributions you can install these with the following command:
 
 	sudo apt-get install multistrap device-tree-compiler u-boot-tools libssl-dev dpkg-dev qemu-user-static
+
+To install the Xilinx tools, consult the documentation that comes with Vivado.
 
 ## Quick Start
 
@@ -39,7 +45,7 @@ The script will ask for root permissions after downloading the packages to allow
 
 _Note: if kernel modules and Open MPI are required in the Debian-based file system, these should be built separately beforehand so they can be copied in._
 
-_Note: if you get unusual errors whilst compiliing, (such as that the compiler is not C and C++ link compatible) ensure that you have sourced Xilinx's setup scripts and that you are therefore compiling using their toolchain._
+_Note: if you get unusual errors whilst compiling, (such as that the compiler is not C and C++ link compatible) ensure that you have sourced Xilinx's setup scripts and that you are therefore compiling using their toolchain._
 
 Now ensure your PHANTOM-compatible IP cores (see later) are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
 
