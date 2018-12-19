@@ -8,7 +8,7 @@ kernel_image=uImage
 devicetree_image=devicetree.dtb
 devicetreeoverlay_image=phantom_uio_devices.dtbo
 
-bootargs=console=ttyPS0,115200 uio_pdrv_genirq.of_id=phantom_platform,generic-uio,ui_pdrv
+bootargs=console=ttyPS0,115200 uio_pdrv_genirq.of_id=phantom_platform,generic-uio,ui_pdrv root=/dev/mmcblk0p2 rw rootwait
 
 fpgaload=if test -e mmc 0 ${bitstream_image}; then load mmc 0 ${bitstream_load_address} ${bitstream_image} && fpga loadb 0 ${bitstream_load_address} ${filesize}; fi
 kernelload=load mmc 0 ${kernel_load_address} ${kernel_image}
