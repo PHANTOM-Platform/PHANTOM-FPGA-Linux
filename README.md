@@ -1,58 +1,112 @@
-# PHANTOM Linux Software Distribution
 
-The PHANTOM Linux software distribution contains prebuilt binaries for the ZC706 board, but also full instructions to create images for other Xilinx-supported boards.
+# PHANTOM FPGA Linux Software Distribution
 
-If you are using the ZC706, you only need set up an SD card, copy over the images, and optionally build a root file system.
+The PHANTOM Linux software distribution contains scripts to build a full Linux environment for Zynq-7000 SoCs based on a platform definition.
 
-Note that many of these commands require that the Xilinx tools are in your `$PATH` so ensure that they are correctly installed.
+The built platform includes:
+* Linux kernel
+* Linux root file system (either BusyBox or Debian/Ubuntu)
+* Bootloaders (Zynq FSBL and U-Boot)
+* Zynq boot image
+* FPGA bitstream
+* Customised Linux device tree
+* PHANTOM communications API (including Open MPI)
+* PHANTOM component definition XML file
+
+Prebuilt images are provided for the [Xilinx ZC706 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html), which just require copying to an SD card in order to boot the system.
+
 
 ## Installation
 
-To begin, clone the repository.
+To begin, clone the repository:
 
     git clone https://github.com/PHANTOM-Platform/PHANTOM-FPGA-Linux.git
 
+### Prerequisites
+
 Before running the build script you will need:
  * [Multistrap](https://wiki.debian.org/Multistrap) (if using the Debian-based file system)
- * [The Device Tree Compiler](https://git.kernel.org/pub/scm/utils/dtc/dtc.git)
+ * [The Device Tree Compiler](https://git.kernel.org/pub/scm/utils/dtc/dtc.git) (dtc)
  * [mkimage](https://linux.die.net/man/1/mkimage)
  * libssl
  * QEMU
- * Xilinx Vivado tools with Zynq-7000 support (imported into the current environment)
+ * Python 3
+ * [Xilinx Vivado tools](https://www.xilinx.com/support/download.html) with Zynq-7000 support (tested with version 2018.2)
 
 On Debian or Ubuntu-based distributions you can install these with the following command:
 
-	sudo apt-get install multistrap device-tree-compiler u-boot-tools libssl-dev dpkg-dev qemu-user-static
+	sudo apt-get install multistrap device-tree-compiler u-boot-tools libssl-dev dpkg-dev qemu-user-static python3
 
-To install the Xilinx tools, consult the documentation that comes with Vivado.
+To install the Xilinx tools, consult the documentation that comes with Vivado. The tools must be imported into the current environment, so that the `vivado`, `hsi` and `bootgen` commands are runnable from the command line.
 
-## Quick Start
 
-Before using the script you must tell the tools which target FPGA board you are using by setting the `$TARGET` environment variable. The full list of supported boards is in `boardsupport.sh` but examples are `zc706`, `zybo`, and `zedboard`.
+## Quick start with prebuilt images
 
-	export TARGET=zc706
+The [`prebuilt`](prebuilt) folder contains a ready-built set of images that can be used to boot a [Xilinx ZC706 board](https://www.xilinx.com/products/boards-and-kits/ek-z7-zc706-g.html), including a default set of dummy components on the FPGA logic and in the Linux device tree, and a BusyBox-based root file system.
 
-First, copy the included pre-built kernel and boot images to be used on the board:
+To create a system with these images, first, copy the included prebuilt kernel, file system, bitstream and boot images to be used on the board:
 
 	./make.sh prebuilt
 
-The pre-built images include a BusyBox-based root file system.
-If using the Debian-based root file system, set `ROOTFS` to `multistrap` at in `boardsupport.sh` and generate with:
+Next, format an SD card with a FAT32 file system of at least 30MB, and ensure it is mounted at `/media/$USER/BOOT`.
+
+To copy the images to the SD card, run:
+
+	./make.sh sdcard
+
+Insert this SD card into the ZC706 board, set the boot select switches (SW11) to 0-0-1-1-0 for SD boot, and turn on the board with a console connected to the USB UART at 115200 bps. Once booted, login with user "root" and password "phantom". The FPGA components should be accessible at `/dev/phantom/`.
+
+
+## Quick start with custom configuration
+
+Before using the build scripts, you must create a configuration describing which FPGA board to target, which root file system type to use, and which FPGA components to include in the design.
+
+These options are set in the [`phantom_fpga_config.json`](phantom_fpga_config.json) file, with the following format:
+
+```json
+{
+	"target": {
+		"board": "board_name",
+		"rootfs": "rootfstype"
+	},
+	"ipcores": [
+		{
+			"ipname": "ipcore1",
+			"memory": 4096
+		}
+	]
+}
+```
+
+* `board` should be set to the target board type, as defined in [`boardsupport.sh`](boardsupport.sh) (e.g. `zc706`, `zybo`, `zedboard`)
+* `rootfs` should be set to the root file system type, either `buildroot` or `multistrap`
+* `ipcores` should contain a list of the IP cores to include in the design, along with their shared memory requirements, as follows:
+	* `ipname` is the name of a PHANTOM IP core, as recognised by Vivado (and in [`arch/phantom_ip/`](arch/phantom_ip/))
+	* `memory` is the amount of shared memory (in bytes) to reserve for access by the IP core's master interface and associated Linux driver. The build scripts will round this number to the next power of two, and at least 4KiB. A value of `0` means no shared memory will be available.
+
+### Building the hardware project
+
+Ensure your PHANTOM-compatible IP cores (see later) are in [`arch/phantom_ip/`](arch/phantom_ip/) and run the following:
+
+	./make.sh hwproject
+	./make.sh implement
+
+### Multistrap (Debian-based) root file system
+
+If using the Debian-based root file system, set `rootfs` to `multistrap` in [`phantom_fpga_config.json`](phantom_fpga_config.json) and generate with:
 
 	./make.sh rootfs
 
-The script will ask for root permissions after downloading the packages to allow it to chroot into the new file system in order to change the root password.
+The script will ask for root permissions after downloading packages, to allow it to chroot into the new file system to complete package set-up and set the root password (the user will be prompted for this).
 
-_Note: if kernel modules and Open MPI are required in the Debian-based file system, these should be built separately beforehand so they can be copied in._
+If Linux kernel modules or Open MPI libraries are required in the file system, these must be built beforehand so they can be copied in. Therefore, for a complete file system, run the following:
+
+	./make.sh sources
+	./make.sh kernel
+	./make.sh ompi
+	./make.sh rootfs
 
 _Note: if you get unusual errors whilst compiling, (such as that the compiler is not C and C++ link compatible) ensure that you have sourced Xilinx's setup scripts and that you are therefore compiling using their toolchain._
-
-Now ensure your PHANTOM-compatible IP cores (see later) are in `arch/phantom_ip` and run the following, where `ipcore1` and `ipcore2` are IP cores to build into the project:
-
-	./make.sh hwproject ipcore1 ipcore2
-	./make.sh implement
-
-Now create an SD card for the board.
 
 ### Set up an SD card (or alternative storage device)
 
@@ -62,141 +116,150 @@ If using the Debian-based file system, an SD card (or similar storage) is requir
 
 Format an SD card with two partitions:
 
- * The first, a small FAT32 partition called `BOOT`. This is just to hold the bootloader, kernel, and a bitstream, so 50MB is plenty of space.
+ * The first, a small FAT32 partition called `BOOT`. This is just to hold the bootloaders, kernel, and FPGA bitstream, so 30MB is typically plenty of space.
  * The rest of the card as an ext4 partition called `Linux`.
 
-Ensure that the SD card partitions are mounted and that the `SDCARD_BOOT` and `SDCARD_ROOTFS` variables at the top of `make.sh` are correctly set. Now copy all the files to the SD card:
+Ensure that the SD card partitions are mounted and that the `SDCARD_BOOT` and `SDCARD_ROOTFS` variables at the top of `make.sh` are correctly set.
+
+Finally copy all boot files and the root file system to the SD card, using:
 
 	./make.sh sdcard
 
-You are now ready to go!
+The FPGA board can now be programmed and booted to Linux using this SD card.
 
 
 ## PHANTOM-compatible IP Cores
 
-The architecture scripts build an FPGA design from a set of PHANTOM-compatible IP cores in `arch/phantom_ip`. A PHANTOM-compatible IP core has the following characteristics:
+The architecture scripts build an FPGA design from a set of PHANTOM-compatible IP cores in [`arch/phantom_ip/`](arch/phantom_ip/). A PHANTOM-compatible IP core has the following characteristics:
 
  * Exactly one AXI Slave interface, which is used to control the core via UIO-mapped registers.
  * Zero or more AXI Master interfaces which are used for high-speed access to main memory.
- * An optional interrupt line for triggering interrupt handlers in Linux userland.
+ * An optional interrupt line for triggering interrupt handlers in Linux userland (not currently implemented).
 
 The IP core should also be an IP core as generated by the Xilinx tools (such as from Vivado HLS or packaged by Vivado).
 
 
-## Building for other boards
+## Building images from sources
 
-To rebuild the images, the first task is to edit options at the top of `make.sh` to ensure that everything is ready for your target board. The `DEVICETREE`, `UBOOT_TARGET`, and `BOARD_PART` variables are currently set for the ZC706 board.
+### Setting-up board support and build variables
 
-`DEVICETREE` should be the name of the device tree in the Linux kernel tree to use. Xilinx provides these for all of its boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders.
+To build the images, the first task is to ensure the target board is defined in [`boardsupport.sh`](boardsupport.sh), along with appropriate build variables.
 
-`UBOOT_TARGET` should be the target board to build u-boot for. The available configurations are in the `u-boot-xlnx/configs` directory.
+To support a non-default board, the following variables should be used in [`boardsupport.sh`](boardsupport.sh), copying the format of existing entries:
+* `DEVICETREE` should be the name of the device tree in the Linux kernel tree to use. Xilinx provides these for all of its boards in the [`arch/arm/boot/dts/`](https://github.com/Xilinx/linux-xlnx/tree/master/arch/arm/boot/dts) folder of the [kernel source](https://github.com/Xilinx/linux-xlnx).
+* `UBOOT_TARGET` should be the target board to build U-Boot for. The available configurations are in the [`configs`](https://github.com/Xilinx/u-boot-xlnx/tree/master/configs) directory of the [U-Boot source](https://github.com/Xilinx/u-boot-xlnx).
+* `BOARD_PART` should be the Xilinx name for the target board. You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
 
-`BOARD_PART` should be the Xilinx name for the target board. You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
+The `VIVADO_VERSION`, `OMPI_VERSION` and `BUILDROOT_VERSION` variables can be customised to match the desired source versions to download and build. In particular, `VIVADO_VERSION` should be set to match the version of Vivado used to build the hardware. The default Vivado version is `2018.2`.
 
-There are examples in `make.sh` itself of what these variables should be set to for other common boards.
+If any extra customisation is needed to the Linux kernel build, configuration parameters can be added to the [`custom/kernel_config`](custom/kernel_config) file, whose contents will be appended to the default config (`xilinx_zynq_defconfig`) before the kernel is built.
 
-`KERNEL_TAG` and `UBOOT_TAG` should be set to the appropriate tag (or branch) name to checkout from the Xilinx repositories. For best compatibility, this should typically match the version of Vivado used to build the hardware. To achieve this, simply set `VIVADO_VERSION` and use the default tag strings. The default version is `2017.2`.
+The board type to use when building the system should then be set in [`phantom_fpga_config.json`](phantom_fpga_config.json) (see above).
 
-If any extra kernel customisation is needed, configuration parameters can be added to the `/custom/kernel_config` file, whose contents will be appended to the default config (`xilinx_zynq_defconfig`) before the kernel is built.
+### Building U-Boot and the Linux kernel
 
-Once set, grab the kernel and U-Boot sources and build them with the following:
+Once the board is defined, the Linux kernel and U-Boot sources can be downloaded and built with the following:
 
 	./make.sh sources
 	./make.sh uboot
 	./make.sh kernel
 
+These commands also copy the built products to the `images/` folder. The U-Boot runtime environment is generated separately based on the specific FPGA hardware design, and can be found in `images/uEnv.txt` after the hardware project is created.
 
-## Building Open MPI
+### Creating an FPGA hardware design
 
-[Open MPI](https://www.open-mpi.org) can be downloaded and built for Zynq using the make script, and will be installed to `/opt` on the created root file system by default.
+The PHANTOM distribution also contains the scripts that create PHANTOM-compatible FPGA designs. A PHANTOM hardware design encapsulates a set of IP cores, makes them available to the software running in the Linux distribution, and includes the various security and monitoring requirements of the PHANTOM platform.
 
-Set the `OMPI_VERSION` variable in `make.sh` as required (the default is to use v3.0.0). If needed, the download URL can also be customised by changing `OMPI_URL`.
+To build a hardware project, first check ensure that the IP cores you are using are in the [`arch/phantom_ip/`](arch/phantom_ip/) directory. This directory already contains two dummy IP cores, which can be used for testing.
 
-Open MPI can then be built and installed with the following:
+Next, edit [`phantom_fpga_config.json`](phantom_fpga_config.json) to describe the specific hardware design requirements, including FPGA board type, the IP cores to include, and the shared memory requirements of those IP cores (see above for a description of the file structure).
 
-	./make.sh sources
-	./make.sh ompi
+Once set, execute the following to create the hardware project and then perform Vivado implementation on the design to produce a bitstream:
 
-
-## Creating an FPGA hardware design
-
-The PHANTOM distribution also contains the scripts which create PHANTOM-compatible FPGA designs. A PHANTOM hardware design encapsulates a set of IP cores, makes them available to the software running in the Linux distribution, and includes the various security and monitoring requirements of the PHANTOM platform.
-
-To build a hardware project, first check ensure that the IP cores you are using are in the `arch/phantom_ip` directory. This directory already contains two dummy IP cores which can be used for testing. Ensure that the `BOARD_PART` option at the top of `make.sh` is set for your target board. `BOARD_PART` is the Xilinx part name for the development board being used. For the ZC706 this is `xilinx.com:zc706:part0:1.3`. You can list all of the board parts that your Xilinx installation supports by entering the command `get_board_parts` into the TCL console of Vivado.
-
-Once set, execute the following:
-
-	./make.sh hwproject ipcore1 ipcore2
-
-where `ipcore1` and `ipcore2` are the PHANTOM IP cores to add to this project. This will create a Vivado project at `/hwproject` which you can build using Vivado as normal, or implement from the command line with:
-
+	./make.sh hwproject
 	./make.sh implement
 
+The resulting hardware project will be created in the `hwproj/` directory. Alongside the hardware project itself, the scripts will generate a matching PHANTOM component definition XML file, Linux device tree overlay describing the hardware, and a compatible U-Boot environment definition, all output to `images/`.
 
-## Note on Device Trees
+### Device tree generation
 
-You must have a suitable device tree for the kernel to work on your target board. Xilinx's repository contains device trees for many boards in the `/arch/arm/boot/dts/` and `/arch/arm64/boot/dts/` folders. These all include a base tree called `zynq-7000.dtsi` which describes the generic Zynq SoC architecture. This project includes a customised `zynq-7000.dtsi`, the only difference being that the customised version includes the file `arch/phantom_uio_devices.dtsi` to inform the kernel about the PHANTOM architecture infrastructure. This is all handled by `./make.sh`.
+You must have a suitable device tree for U-Boot and the Linux kernel to work on your target board. Xilinx's [Linux kernel repository](https://github.com/Xilinx/linux-xlnx) contains device trees for many boards in the [`arch/arm/boot/dts/`](https://github.com/Xilinx/linux-xlnx/tree/master/arch/arm/boot/dts) folder. These all reference a base tree called `zynq-7000.dtsi` which describes the generic Zynq SoC architecture. If your target board requires a custom device tree, ensure it is copied into the kernel and U-Boot source tree and matches the associated definitions in [`boardsupport.sh`](boardsupport.sh).
 
-If your target board requires an entirely custom device tree that is not included in the Xilinx repository, ensure that it includes the line:
+In order to leave the board's Linux kernel device tree untouched, PHANTOM components are described in a device tree _overlay_, which is dynamically applied to the base device tree on each boot by U-Boot. The build scripts create this device tree overlay based on the PHANTOM component definition XML output from the hardware project creation. See [`arch/generate_environment.py`](arch/generate_environment.py) for how this overlay is generated.
 
-	#include "phantom_uio_devices.dtsi"
+The base device tree and device tree overlay are generated when building the kernel and hardware project respectively, but if required they can be built separately using:
 
-Then compile your device tree to a `.dtb` file called `images/devicetree.dtb` before running `./make.sh sdcard`.
+	./make.sh devicetree
 
+### Generating an FSBL
 
-## Generate an FSBL
+An FSBL (first stage bootloader) is required to start the boot process, and sets up various components of the Zynq-7000 device.
 
-An FSBL (first stage bootloader) is required to start the boot process. The `images` folder contains a prebuilt FSBL for the ZC706.
-
-You can generate a new FSBL based on the current hardware design, using:
+You can generate an FSBL based on the current hardware design and board type, using:
 
 	./make.sh fsbl
 
 This will create `images/fsbl.elf`. Alternatively, an FSBL can be created using Xilinx SDK.
 
 
-## Create a boot image
+### Creating a boot image
 
-We now need to combine the FSBL and U-Boot into a single boot image. The `images` folder contains a prebuilt `BOOT.bin` containing the bootloaders generated for the ZC706.
+The FSBL and U-Boot must be combined into a single boot image in order to boot a board from an SD card.
 
-If the FSBL or U-Boot executables are changed, the boot image can be recreated using:
+After the FSBL and U-Boot executables are generated, of if they change, the boot image can be created using:
 
 	./make.sh bootimage
 
 This will create `images/BOOT.bin`. Alternatively, a boot image can be created using Xilinx SDK.
 
 
-## Creating a root file system
+### Building Open MPI
+
+[Open MPI](https://www.open-mpi.org) can be downloaded and built for Linux on the Zynq using the build scripts, and will be installed to `/opt` on the created root file system by default.
+
+Set the `OMPI_VERSION` variable in [`boardsupport.sh`](boardsupport.sh) as required (the default is to use v3.0.0). If needed, the download URL can also be customised by changing `OMPI_URL`.
+
+Open MPI can then be built and installed with the following:
+
+	./make.sh sources
+	./make.sh ompi
+
+Open MPI must be built _before_ creating the root filesystem, if it is to be included.
+
+### Creating a root file system
 
 The make script can create either a [Debian](https://www.debian.org)-based root file system using [Multistrap](https://wiki.debian.org/Multistrap), or a [BusyBox](https://busybox.net)-based root file system using [Buildroot](https://buildroot.org). The Debian file system is designed to be mounted as the system's main persistent storage (e.g. from an SD card), whereas the BusyBox system is better suited to running as an ephemeral RAM disk.
 
-The file system can be generated by setting the `ROOTFS` variable in `make.sh` to either `multistrap` or `buildroot`, then running:
+The file system can be generated by setting the `rootfs` type in [`phantom_fpga_config.json`](phantom_fpga_config.json) to either `multistrap` or `buildroot`, then running:
 
+	./make.sh sources # (if using Buildroot)
 	./make.sh rootfs
 
 If the appropriate sources have been downloaded and built beforehand, this will also copy Open MPI, Linux kernel modules and the PHANTOM API libraries into the file system.
 
 Alternative Linux file systems can be used, but are not supported by these scripts.
 
-### Buildroot file system customisation
+#### Buildroot file system customisation
 
 The Buildroot-generated file system can be modified using the configuration file, post-build script and file system overlay in the [`buildroot-phantom`](buildroot-phantom) folder.
 
 More information is available in the [Buildroot manual](https://buildroot.org/downloads/manual/manual.html).
 
-### Multistrap file system customisation
+#### Multistrap file system customisation
 
-The basic contents of the file system can be customised by editing [`multistrap/multistrap.conf`](multistrap/multistrap.conf) before building. This file defines the packages included, as well as the Debian version to use (both Jessie and Stretch should work). The default configuration uses Debian Jessie, and includes a selection of useful packages for a fairly full-featured system.
+The basic contents of the file system can be customised by editing [`multistrap/multistrap.conf`](multistrap/multistrap.conf) before building. This file defines the packages included, as well as the Debian version to use (both Debian 8 (Jessie) and 9 (Stretch) should work). The default configuration uses Debian 9 (Stretch), and includes a selection of useful packages for a fairly full-featured system.
+
+As an alternative to Debian, an optional Ubuntu 18.04 LTS (Bionic Beaver) configuration is also included, in [`multistrap/multistrap-ubuntu.conf`](multistrap/multistrap-ubuntu.conf). To use this, replace [`multistrap/multistrap.conf`](multistrap/multistrap.conf) with this file.
 
 The [`multistrap/rootfs_setup.sh`](multistrap/rootfs_setup.sh) script is run to set-up the Multistrap system after packages have been downloaded. This file can be modified to customise this process.
 
 Additional files can be added to the root file system automatically by the make script by placing them in the [`multistrap/overlay/`](multistrap/overlay/) folder.
 
-### File system size
+#### File system size
 
 The Debian root file system created by the scripts is designed to be copied to an SD card and mounted as the system's main storage, so can be quite large.
 
-The following are estimated sizes for the built file system, where 'complete' is the full PHANTOM default `multistrap.conf` and 'minimal' is only the base Debian packages required for booting:
+The following are estimated sizes for the built file system, where 'complete' is the full default included `multistrap.conf` and 'minimal' is only the base Debian packages required for booting:
 
 * Jessie (complete) - 388MB
 * Jessie (minimal) - 186MB
@@ -208,11 +271,11 @@ This includes around 13MB for Open MPI, kernel modules and the PHANTOM API on to
 The compressed image of the BusyBox file system is around 10MB by default (with Open MPI, kernel modules and PHANTOM API included).
 
 
-## Supporting files for additional boards, etc.
+## Support files for additional boards, etc.
 
-The [`support/`](support/) folder contains a range of additional files that can be installed for working with non-standard boards, as well as potential kernel patches and configuration options.
+The [`support/`](support/) folder contains a range of additional files that can be installed for working with non-standard boards, as well as potentially useful kernel patches and optional configuration options.
 
-See the [support README file](support/README.md) for more information.
+See [`support/README.md`](support/README.md) for more information.
 
 
 ## Running a full build from sources
@@ -220,12 +283,12 @@ See the [support README file](support/README.md) for more information.
 The following series of make script commands will run a typical full build and install of all components from sources.
 This is equivalent to `./make.sh all`.
 
-The variables at the top of the make script should be set before starting the build process, and the SD card partitioned and mounted ready for use.
+The contents of [`phantom_fpga_config.json`](phantom_fpga_config.json) should be set before starting the build process, and the SD card partitioned and mounted ready for use.
 
-If any kernel, U-Boot or Buildroot customisations are required (patches, overlays, etc.), these should be applied after fetching sources and before building these components.
+If any Linux kernel, U-Boot or Buildroot customisations are required (patches, overlays, etc.), these should be applied after fetching sources but before building these components.
 
 	./make.sh sources
-	./make.sh hwproject phantom_dummy_2
+	./make.sh hwproject
 	./make.sh implement
 	./make.sh fsbl
 	./make.sh uboot
