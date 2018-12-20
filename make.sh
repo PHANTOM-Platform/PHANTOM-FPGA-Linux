@@ -12,10 +12,10 @@
 #   The rest, called Linux, as ext4
 # An Ubuntu-based system will automount such a card at the default locations below:
 if [[ -z "${SDCARD_BOOT}" ]]; then
-	SDCARD_BOOT=/media/$USER/BOOT/
+	SDCARD_BOOT=/media/$USER/BOOT
 fi
 if [[ -z "${SDCARD_ROOTFS}" ]]; then
-	SDCARD_ROOTFS=/media/$USER/Linux/
+	SDCARD_ROOTFS=/media/$USER/Linux
 fi
 
 # boadsupport.sh sets variables based on the target configuration file
@@ -72,7 +72,11 @@ function build_devicetree {
 	make ARCH=arm $DEVICETREE
 	cp arch/arm/boot/dts/$DEVICETREE ../images/devicetree.dtb
 	cd ..
-	arch/generate_environment.py --devicetree hwproj/phantom_fpga_conf.xml arch/phantom_uio_devices_overlay_template.dts | dtc -I dts -O dtb -W no-unit_address_vs_reg -o images/phantom_uio_devices.dtbo
+}
+
+function build_devicetree_overlay {
+	mkdir -p images
+	arch/generate_environment.py --devicetree images/phantom_fpga_conf.xml arch/phantom_uio_devices_overlay_template.dts | dtc -I dts -O dtb -W no-unit_address_vs_reg -o images/phantom_uio_devices.dtbo
 }
 
 function build_ompi {
@@ -100,7 +104,7 @@ function copy_ompi {
 function check_sources {
 	if [ ! "$1" == "sources" ]; then
 		if [ ! -d "linux-xlnx" ] || [ ! -d "u-boot-xlnx" ] || [ ! -d "ompi" ] || ([ "$ROOTFS" == "buildroot" ] && [ ! -d "buildroot" ]); then
-			echo "Run '$0 sources' first to grab the kernel, U-Boot, Open MPI and (optionally) Buildroot sources."
+			echo "Run '$0 sources' first to download the Linux kernel, U-Boot, Open MPI and (optionally) Buildroot sources."
 			exit
 		fi
 	fi
@@ -156,12 +160,17 @@ function create_rootfs {
 		build_multistrap
 		build_api
 		copy_api
-		copy_ompi
-		echo "Installing kernel modules..."
-		cd linux-xlnx
-		sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
-		cd ..
+		if [ -d "ompi" ]; then
+			copy_ompi
+		fi
+		if [ -d "linux-xlnx" ]; then
+			echo "Installing kernel modules..."
+			cd linux-xlnx
+			sudo make ARCH=arm modules_install INSTALL_MOD_PATH=`pwd`/../multistrap/rootfs/
+			cd ..
+		fi
 	elif [ "$ROOTFS" == "buildroot" ]; then
+		check_sources
 		build_api
 		copy_api
 		copy_ompi
@@ -213,7 +222,7 @@ function generate_uenv {
 		uenv_template=uEnv-buildroot_template.txt
 	fi
 	mkdir -p images
-	arch/generate_environment.py --uenv hwproj/phantom_fpga_conf.xml arch/$uenv_template > images/uEnv.txt
+	arch/generate_environment.py --uenv images/phantom_fpga_conf.xml arch/$uenv_template > images/uEnv.txt
 }
 
 
@@ -261,7 +270,6 @@ case "$1" in
 
 	'rootfs' )
 		check_rootfs_valid
-		check_sources
 		create_rootfs
 		generate_uenv
 	;;
@@ -272,9 +280,12 @@ case "$1" in
 	;;
 
 	'hwproject' )
+		mkdir -p images
 		cd arch
 		vivado -mode batch -source build_project.tcl -quiet -notrace -tclargs hwproj `(cd ..; pwd)` $BOARD_PART $IPCORES
 		cd ..
+		cp hwproj/phantom_fpga_conf.xml images/phantom_fpga_conf.xml
+		build_devicetree_overlay
 		generate_uenv
 	;;
 
@@ -296,13 +307,13 @@ case "$1" in
 		cd arch
 		vivado -mode batch -source implement_project.tcl -notrace
 		cp ../hwproj/hwproj.runs/impl_1/design_1_wrapper.bit ../images/bitstream.bit
-		cp ../hwproj/phantom_fpga_conf.xml ../images/phantom_fpga_conf.xml
 	;;
 
 	'devicetree' )
 		check_sources
 		compile_environment
 		build_devicetree
+		build_devicetree_overlay
 	;;
 
 	'fsbl' )
@@ -356,6 +367,7 @@ case "$1" in
 		cd ..
 		# devicetree
 		build_devicetree
+		build_devicetree_overlay
 		# ompi
 		build_ompi
 		# rootfs
