@@ -71,17 +71,18 @@ These options are set in the [`phantom_fpga_config.json`](phantom_fpga_config.js
 	},
 	"ipcores": [
 		{
-			"ipname": "ipcore1",
+			"ipname": "vendorname:libraryname:ipcore:1.0",
 			"memory": 4096
 		}
 	]
 }
 ```
 
-* `board` should be set to the target board type, as defined in [`boardsupport.sh`](boardsupport.sh) (e.g. `zc706`, `zybo`, `zedboard`)
-* `rootfs` should be set to the root file system type, either `buildroot` or `multistrap`
+* `target` describes the deployment target of the design being generated, as follows:
+	* `board` should be set to the target board type, as defined in [`boardsupport.sh`](boardsupport.sh) (e.g. `zc706`, `zybo`, `zedboard`)
+	* `rootfs` should be set to the desired root file system type, either `buildroot` or `multistrap`
 * `ipcores` should contain a list of the IP cores to include in the design, along with their shared memory requirements, as follows:
-	* `ipname` is the name of a PHANTOM IP core, as recognised by Vivado (and in [`arch/phantom_ip/`](arch/phantom_ip/))
+	* `ipname` is the name of a PHANTOM IP core available in [`arch/phantom_ip/`](arch/phantom_ip/), as recognised by Vivado (the standard format of this field in Vivado is `vendor:library:name:version`)
 	* `memory` is the amount of shared memory (in bytes) to reserve for access by the IP core's master interface and associated Linux driver. The build scripts will round this number to the next power of two, and at least 4KiB. A value of `0` means no shared memory will be available.
 
 ### Building the hardware project

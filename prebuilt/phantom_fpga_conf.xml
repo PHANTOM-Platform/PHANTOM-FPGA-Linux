@@ -12,7 +12,7 @@
 	<component_inst>
 		<name>phantom_0</name>
 		<id>0</id>
-		<ipname>phantom_dummy_4</ipname>
+		<ipname>user.org:user:phantom_dummy_4:1.0</ipname>
 		<num_masters>4</num_masters>
 		<master_addr_base_0>0x3F800000</master_addr_base_0>
 		<master_addr_range_0>0x800000</master_addr_range_0>
@@ -22,7 +22,7 @@
 	<component_inst>
 		<name>phantom_1</name>
 		<id>1</id>
-		<ipname>phantom_dummy_2</ipname>
+		<ipname>user.org:user:phantom_dummy_2:1.0</ipname>
 		<num_masters>2</num_masters>
 		<master_addr_base_0>0x3F7FF000</master_addr_base_0>
 		<master_addr_range_0>0x1000</master_addr_range_0>
@@ -32,7 +32,7 @@
 	<component_inst>
 		<name>phantom_2</name>
 		<id>2</id>
-		<ipname>phantom_dummy_0</ipname>
+		<ipname>user.org:user:phantom_dummy_0:1.0</ipname>
 		<num_masters>0</num_masters>
 		<master_addr_base_0>0x3F7FF000</master_addr_base_0>
 		<master_addr_range_0>0x0</master_addr_range_0>

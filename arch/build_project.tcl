@@ -61,7 +61,7 @@ if { $num_board_parts_found == 0 } {
 	error "    Specified board part '$brd_part' not found in Xilinx tools installation."
 }
 if { $num_board_parts_found > 1 } {
-	error "    Specified board part '$brd_part' not specific enough. $num_board_parts_found matching board parts found."
+	error "    Specified board part '$brd_part' not specific enough. $num_board_parts_found matching board parts found ($board_parts)."
 }
 set board_display_name [get_property DISPLAY_NAME $board_parts]
 set board_part_name [get_property PART_NAME $board_parts]
@@ -121,14 +121,14 @@ foreach ip $ips {
 	set ipmemsize [lindex $ip 1]
 	puts "Processing IP $ipname"
 
-	set ip [get_ipdefs -quiet *$ipname*]
+	set ip [get_ipdefs -quiet $ipname]
 	set num_found [llength $ip]
 
 	if { $num_found == 0 } {
 		error "Specified IP $ipname not found in IP repository."
 	}
 	if { $num_found > 1 } {
-		error "Specified IP $ipname not specific enough. $num_found matching IP cores found."
+		error "Specified IP $ipname not specific enough. $num_found matching IP cores found ($ip)."
 	}
 
 	# Calculate base master interface memory address for this IP core

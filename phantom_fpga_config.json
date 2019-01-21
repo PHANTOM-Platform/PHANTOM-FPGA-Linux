@@ -5,15 +5,15 @@
 	},
 	"ipcores": [
 		{
-			"ipname": "phantom_dummy_2",
+			"ipname": "user.org:user:phantom_dummy_2:1.0",
 			"memory": 4096
 		},
 		{
-			"ipname": "phantom_dummy_4",
+			"ipname": "user.org:user:phantom_dummy_4:1.0",
 			"memory": 8388608
 		},
 		{
-			"ipname": "phantom_dummy_0",
+			"ipname": "user.org:user:phantom_dummy_0:1.0",
 			"memory": 0
 		}
 	]
