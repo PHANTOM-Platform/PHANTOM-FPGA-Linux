@@ -21,13 +21,7 @@ proc log {text} {
 
 # Read command line arguments
 if {[llength $argv] < 3} {
-	puts "Warning: Required arguments <project name> <project path> <board part> \[<ip core> <memory size>\] \[<ip core> <memory size>\] ..."
-	puts "Using default values."
-
-	set proj_name "testing"
-	set proj_path "~"
-	set brd_part "xilinx.com:zc706:part0:1.3"
-	set ips [list phantom_dummy_2 phantom_dummy_4]
+	error "Required arguments <project name> <project path> <board part> \[<ip core> <memory size>\] \[<ip core> <memory size>\] ..."
 } else {
 	set proj_name [lindex $argv 0]
 	set proj_path [lindex $argv 1]
