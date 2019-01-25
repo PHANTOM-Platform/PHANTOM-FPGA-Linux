@@ -28,8 +28,23 @@ if {[llength $argv] < 3} {
 	set brd_part [lindex $argv 2]
 
 	set ips ""
+	set ipnumbers [dict create]
+	set counter 0
 	for { set i 3 } { $i < [llength $argv] } { set i [expr $i + 2] } {
-		lappend ips [list [lindex $argv $i] [lindex $argv [expr $i + 1]]]
+		set ipname [lindex $argv $i]
+		set ipmemsize [lindex $argv [expr $i + 1]]
+		set coreid $counter
+		set corename phantom_$coreid
+		if {[dict exists $ipnumbers $ipname]} {
+			dict incr ipnumbers $ipname
+		} else {
+			dict append ipnumbers $ipname 0
+		}
+		set ipnum [dict get $ipnumbers $ipname]
+		set uionameslave [string map {: ,} phantom[format "%02d" $coreid]_slave_${ipname}_${ipnum}]
+		set uionamemaster [string map {: ,} phantom[format "%02d" $coreid]_master_${ipname}_${ipnum}]
+		lappend ips [dict create ipname $ipname ipmemsize $ipmemsize corename $corename coreid $coreid uionameslave $uionameslave uionamemaster $uionamemaster]
+		incr counter
 	}
 }
 
@@ -41,10 +56,10 @@ puts "Creating PHANTOM project $proj_path/$proj_name"
 puts "Target board $brd_part"
 puts ""
 puts "IPs to include:"
-foreach ip $ips {
-	set ipname [lindex $ip 0]
-	set ipmemsize [lindex $ip 1]
-	puts "    $ipname ($ipmemsize bytes)"
+foreach ipdict $ips {
+	dict with ipdict {
+		puts "    $corename ($ipname) ($ipmemsize bytes)"
+	}
 }
 puts ""
 
@@ -101,7 +116,6 @@ set zynq_ps7 [create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7 pro
 apply_bd_automation -rule xilinx.com:bd_rule:processing_system7 -config {make_external "FIXED_IO, DDR" apply_board_preset "1" Master "Disable" Slave "Disable" } $zynq_ps7
 
 set current_hp_port 0
-set current_num 0
 set mastermode 1
 
 # Get the size of DDR from the Processing System parameters
@@ -110,108 +124,109 @@ puts $fp "\t<ddr_size>$ddrsize</ddr_size>"
 
 set membase $ddrsize
 
-foreach ip $ips {
-	set ipname [lindex $ip 0]
-	set ipmemsize [lindex $ip 1]
-	puts "Processing IP $ipname"
+foreach ipdict $ips {
+	dict with ipdict {
+		puts "Processing IP $ipname"
 
-	set ip [get_ipdefs -quiet $ipname]
-	set num_found [llength $ip]
+		set ip [get_ipdefs -quiet $ipname]
+		set num_found [llength $ip]
 
-	if { $num_found == 0 } {
-		error "Specified IP $ipname not found in IP repository."
-	}
-	if { $num_found > 1 } {
-		error "Specified IP $ipname not specific enough. $num_found matching IP cores found ($ip)."
-	}
-
-	# Calculate base master interface memory address for this IP core
-	set membase [expr $membase - $ipmemsize]
-
-	# Add the PHANTOM core
-	set core_name phantom_$current_num
-	create_bd_cell -type ip -vlnv $ip $core_name
-	
-	# Connect slaves
-	set slave [get_bd_intf_pins -filter {MODE == Slave} $core_name/*]
-	if { [llength $slave] != 1 } {
-		error "Specified IP $ipname must have exactly one AXI slave connection."
-	}
-	apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$zynq_ps7/M_AXI_GP0\" Clk \"Auto\""  $slave
-
-	# Connect masters
-	# The block automation rule is different depending on whether we are creating a new connection, or sharing an existing one:
-	#	This creates a new connection:
-	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"/phantom_dummy_4_0/M01_AXI\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\""  [get_bd_intf_pins processing_system7_0/S_AXI_HP3]
-	#	This shares an existing one:
-	#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Slave "/processing_system7_0/S_AXI_HP0" Clk "Auto" }  [get_bd_intf_pins phantom_dummy_4_0/M02_AXI]
-	set masters [get_bd_intf_pins -filter {MODE == Master} $core_name/*]
-	foreach master $masters {
-
-		# Enable HP connections
-		if { $mastermode } {
-			set_property -dict [list CONFIG.PCW_USE_S_AXI_HP${current_hp_port} {1}] $zynq_ps7
+		if { $num_found == 0 } {
+			error "Specified IP $ipname not found in IP repository."
+		}
+		if { $num_found > 1 } {
+			error "Specified IP $ipname not specific enough. $num_found matching IP cores found ($ip)."
 		}
 
-		set slaveport [get_bd_intf_pins $zynq_ps7/S_AXI_HP$current_hp_port]
-		puts "Connecting $master to $slaveport"
-		if { $mastermode } {
-			apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$master\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\"" $slaveport
+		# Calculate base master interface memory address for this IP core
+		set membase [expr $membase - $ipmemsize]
+
+		# Add the PHANTOM core
+		create_bd_cell -type ip -vlnv $ip $corename
+		
+		# Connect slaves
+		set slave [get_bd_intf_pins -filter {MODE == Slave} $corename/*]
+		if { [llength $slave] != 1 } {
+			error "Specified IP $ipname must have exactly one AXI slave connection."
+		}
+		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$zynq_ps7/M_AXI_GP0\" Clk \"Auto\""  $slave
+
+		# Connect masters
+		# The block automation rule is different depending on whether we are creating a new connection, or sharing an existing one:
+		#	This creates a new connection:
+		#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"/phantom_dummy_4_0/M01_AXI\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\""  [get_bd_intf_pins processing_system7_0/S_AXI_HP3]
+		#	This shares an existing one:
+		#		apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config {Slave "/processing_system7_0/S_AXI_HP0" Clk "Auto" }  [get_bd_intf_pins phantom_dummy_4_0/M02_AXI]
+		set masters [get_bd_intf_pins -filter {MODE == Master} $corename/*]
+		foreach master $masters {
+
+			# Enable HP connections
+			if { $mastermode } {
+				set_property -dict [list CONFIG.PCW_USE_S_AXI_HP${current_hp_port} {1}] $zynq_ps7
+			}
+
+			set slaveport [get_bd_intf_pins $zynq_ps7/S_AXI_HP$current_hp_port]
+			puts "Connecting $master to $slaveport"
+			if { $mastermode } {
+				apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Master \"$master\" Clk \"Auto\" intc_ip \"New AXI SmartConnect\"" $slaveport
+			} else {
+				apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Slave \"$slaveport\" Clk \"Auto\"" $master
+			}
+
+			# Set allocated memory range for this component's master interfaces
+			foreach addr_space [get_bd_addr_spaces -of_objects $master] {
+				puts "Mapping $master to address 0x[format %X $membase]"
+				set_property range $ipmemsize [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
+				set_property offset $membase [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
+			}
+
+			# Round robin connect to the HP ports
+			incr current_hp_port
+			if { $current_hp_port == 4 } {
+				set current_hp_port 0
+				set mastermode 0
+			}
+		}
+
+		# Set the slave interface address mapping
+		# The API is set to assume the addresses of the PHANTOM cores are:
+		#	Component 0 : 0x4000_0000
+		#	Component 1 : 0x4100_0000
+		#	Component 2 : 0x4200_0000
+		# 	etc...
+		set offset [expr 0x40000000 + $coreid * 0x1000000]
+		puts "Mapping $corename slave to address 0x[format %X $offset]"
+		set_property offset $offset [get_bd_addr_segs "$zynq_ps7/Data/SEG_${corename}_*reg"]
+		set_property range 16M [get_bd_addr_segs "$zynq_ps7/Data/SEG_${corename}_*reg"]
+
+		# Print the core's address mapping to log buffer
+		log ""
+		log "$corename ($ipname)"
+		log "     Slave --  Address: 0x[format %X $offset]  Size: 0x1000000"
+		log "               UIO Device: \"$uionameslave\""
+		if {$ipmemsize != 0} {
+			log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $ipmemsize]"
+			log "               UIO Device: \"$uionamemaster\""
+		}
+
+		# Output details to XML
+		puts $fp "\t<component_inst>"
+		puts $fp "\t\t<name>$corename</name>"
+		puts $fp "\t\t<id>$coreid</id>"
+		puts $fp "\t\t<ip_name>$ipname</ip_name>"
+		puts $fp "\t\t<uio_name_slave>$uionameslave</uio_name_slave>"
+		puts $fp "\t\t<uio_name_master>$uionamemaster</uio_name_master>"
+		if {[info exists master]} {
+			puts $fp "\t\t<num_masters>[llength $masters]</num_masters>"
 		} else {
-			apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config "Slave \"$slaveport\" Clk \"Auto\"" $master
+			puts $fp "\t\t<num_masters>0</num_masters>"
 		}
-
-		# Set allocated memory range for this component's master interfaces
-		foreach addr_space [get_bd_addr_spaces -of_objects $master] {
-			puts "Mapping $master to address 0x[format %X $membase]"
-			set_property range $ipmemsize [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
-			set_property offset $membase [get_bd_addr_segs "$addr_space/SEG_processing_system7_0_HP${current_hp_port}_DDR_LOWOCM"]
-		}
-
-		# Round robin connect to the HP ports
-		set current_hp_port [expr $current_hp_port + 1]
-		if { $current_hp_port == 4 } {
-			set current_hp_port 0
-			set mastermode 0
-		}
+		puts $fp "\t\t<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
+		puts $fp "\t\t<master_addr_range_0>0x[format %X $ipmemsize]</master_addr_range_0>"
+		puts $fp "\t\t<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
+		puts $fp "\t\t<slave_addr_range_0>0x1000000</slave_addr_range_0>"
+		puts $fp "\t</component_inst>"
 	}
-
-	# Set the slave interface address mapping
-	# The API is set to assume the addresses of the PHANTOM cores are:
-	#	Component 0 : 0x4000_0000
-	#	Component 1 : 0x4100_0000
-	#	Component 2 : 0x4200_0000
-	# 	etc...
-	set offset [expr 0x40000000 + $current_num * 0x1000000]
-	puts "Mapping $core_name slave to address 0x[format %X $offset]"
-	set_property offset $offset [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
-	set_property range 16M [get_bd_addr_segs "$zynq_ps7/Data/SEG_phantom_${current_num}_*reg"]
-
-	# Print the core's address mapping to log buffer
-	log ""
-	log "$core_name ($ipname)"
-	log "     Slave --  Address: 0x[format %X $offset]  Size: 0x1000000"
-	if {$ipmemsize != 0} {
-		log "    Master --  Address: 0x[format %X $membase]  Size: 0x[format %X $ipmemsize]"
-	}
-
-	# Output details to XML
-	puts $fp "\t<component_inst>"
-	puts $fp "\t\t<name>$core_name</name>"
-	puts $fp "\t\t<id>$current_num</id>"
-	puts $fp "\t\t<ipname>$ipname</ipname>"
-	if {[info exists master]} {
-		puts $fp "\t\t<num_masters>[llength $masters]</num_masters>"
-	} else {
-		puts $fp "\t\t<num_masters>0</num_masters>"
-	}
-	puts $fp "\t\t<master_addr_base_0>0x[format %X $membase]</master_addr_base_0>"
-	puts $fp "\t\t<master_addr_range_0>0x[format %X $ipmemsize]</master_addr_range_0>"
-	puts $fp "\t\t<slave_addr_base_0>0x[format %X $offset]</slave_addr_base_0>"
-	puts $fp "\t\t<slave_addr_range_0>0x1000000</slave_addr_range_0>"
-	puts $fp "\t</component_inst>"
-
-	set current_num [expr $current_num + 1]
 }
 
 # Validate the design - this might produce some warnings (some can be ignored)

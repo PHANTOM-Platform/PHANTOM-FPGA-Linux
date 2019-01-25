@@ -26,15 +26,17 @@ if args.devicetree:
 	slave_devices = ''
 	for component in components:
 		name = component.getElementsByTagName("name")[0].firstChild.data
+		uio_name_slave = component.getElementsByTagName("uio_name_slave")[0].firstChild.data
+		uio_name_master = component.getElementsByTagName("uio_name_master")[0].firstChild.data
 		slave_base = component.getElementsByTagName("slave_addr_base_0")[0].firstChild.data
 		slave_range = component.getElementsByTagName("slave_addr_range_0")[0].firstChild.data
-		slave_devices += '\t\t\t{0}_slave@{1} {{\n\t\t\t\tcompatible = "phantom_platform,generic-uio,ui_pdrv";\n\t\t\t\t#address-cells = <1>;\n\t\t\t\t#size-cells = <1>;\n\t\t\t\treg = <{2} {3}>;\n\t\t\t}};\n'.format(name, slave_base[2:], slave_base, slave_range)
+		slave_devices += '\t\t\t{0}@{1} {{\n\t\t\t\tcompatible = "phantom_platform,generic-uio,ui_pdrv";\n\t\t\t\t#address-cells = <1>;\n\t\t\t\t#size-cells = <1>;\n\t\t\t\treg = <{2} {3}>;\n\t\t\t}};\n'.format(uio_name_slave, slave_base[2:], slave_base, slave_range)
 		num_masters = component.getElementsByTagName("num_masters")[0].firstChild.data
 		if int(num_masters) > 0:
 			master_base = component.getElementsByTagName("master_addr_base_0")[0].firstChild.data
 			master_range = component.getElementsByTagName("master_addr_range_0")[0].firstChild.data
 			reserved_mem += '\t\t\t\t{0}_master_mem: {0}_master_mem@{1} {{\n\t\t\t\t\tno-map;\n\t\t\t\t\treg = <{2} {3}>;\n\t\t\t\t}};\n'.format(name, master_base[2:], master_base, master_range)
-			master_devices += '\t\t\t{0}_master@{1} {{\n\t\t\t\tcompatible = "phantom_platform,generic-uio,ui_pdrv";\n\t\t\t\t#address-cells = <1>;\n\t\t\t\t#size-cells = <1>;\n\t\t\t\treg = <{2} {3}>;\n\t\t\t\tmemory-region = <&{0}_master_mem>;\n\t\t\t}};\n'.format(name, master_base[2:], master_base, master_range)
+			master_devices += '\t\t\t{0}@{1} {{\n\t\t\t\tcompatible = "phantom_platform,generic-uio,ui_pdrv";\n\t\t\t\t#address-cells = <1>;\n\t\t\t\t#size-cells = <1>;\n\t\t\t\treg = <{2} {3}>;\n\t\t\t\tmemory-region = <&{4}_master_mem>;\n\t\t\t}};\n'.format(uio_name_master, master_base[2:], master_base, master_range, name)
 	with open(args.template_file, 'r') as read_file:
 		template = read_file.read()
 	output = template.replace('/* PHANTOM RESERVED MEMORY */', reserved_mem)
